@@ -57,7 +57,32 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 	}
 }
 
+void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
+{
+	const Vec3 colPoints(1.0f, 0.0f, 0.0f); 
+	const Vec3 colLines(0.0f, 1.0f, 0.0f); 
+	for (Masspoint m : m_vPoints)
+	{
+		DUC->setUpLighting(Vec3(), 0.4*Vec3(1, 1, 1), 100, 0.6*Vec3(0.97, 0.86, 1));
+		DUC->drawSphere(m.pos, Vec3(1.0f, 1.0f, 1.0f)); 
+	}
+	for (Spring s : m_vSprings)
+	{
+		DUC->drawLine(m_vPoints[s.masspoint1].pos, colLines, m_vPoints[s.masspoint2].pos, colLines);
+	}
 
+}
+
+int MassSpringSystemSimulator::addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass) // mass == -1 -> use m_fMass
+{
+	m_vPoints.push_back(Masspoint(position, velocity, isFixed, mass == -1 ? m_fMass : mass));
+	return m_vPoints.size() - 1; 
+}
+
+void MassSpringSystemSimulator::addSpring(int masspoint1, int masspoint2, float initialLength, float stiffness) // stiffness == -1 -> use m_fStiffness
+{
+	m_vSprings.push_back(Spring(masspoint1, masspoint2, initialLength, stiffness == -1 ? m_fStiffness : stiffness));
+}
 
 void MassSpringSystemSimulator::onClick(int x, int y)
 {

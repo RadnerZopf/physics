@@ -8,6 +8,32 @@
 #define MIDPOINT 2
 // Do Not Change
 
+struct Masspoint
+{
+	Masspoint(Vec3 _pos, Vec3 _velocity, bool _fixed, float _mass) : pos(_pos), velocity(_velocity), force(0.0f, 0.0f, 0.0f), fixed(_fixed), mass(_mass)
+	{
+
+	}
+
+	Vec3 pos, velocity, force; 
+	float mass;
+	bool fixed; 
+} ;
+
+struct Spring
+{
+	Spring(int _masspoint1, int _masspoint2, float _initialLength, float _stiffness) : masspoint1(_masspoint1), masspoint2(_masspoint2), initialLength(_initialLength), stiffness(_stiffness)
+	{
+
+	}
+
+	int masspoint1, masspoint2;
+	float initialLength; 
+
+	float stiffness;
+	float currentLength; 
+	
+};
 
 class MassSpringSystemSimulator:public Simulator{
 public:
@@ -26,27 +52,29 @@ public:
 	void onMouse(int x, int y);
 
 	// Specific Functions
-	void setMass(float mass);
-	void setStiffness(float stiffness);
-	void setDampingFactor(float damping);
-	int addMassPoint(Vec3 position, Vec3 Velocity, bool isFixed);
-	void addSpring(int masspoint1, int masspoint2, float initialLength);
-	int getNumberOfMassPoints();
-	int getNumberOfSprings();
-	Vec3 getPositionOfMassPoint(int index);
-	Vec3 getVelocityOfMassPoint(int index);
-	void applyExternalForce(Vec3 force);
+	void setMass(float mass) {m_fMass = mass;}
+	void setStiffness(float stiffness) { m_fStiffness = stiffness; }
+	void setDampingFactor(float damping) { m_fDamping = damping; }
+	int addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass = -1); // mass == -1 -> use m_fMass
+	void addSpring(int masspoint1, int masspoint2, float initialLength, float stiffness = -1); // stiffness == -1 -> use m_fStiffness
+	int getNumberOfMassPoints() { return m_vPoints.size(); }
+	int getNumberOfSprings() { return m_vSprings.size(); }
+	Vec3 getPositionOfMassPoint(int index) { return m_vPoints[index].pos; }
+	Vec3 getVelocityOfMassPoint(int index) { return m_vPoints[index].velocity; }
+	void applyExternalForce(Vec3 force) { m_externalForce += force; } // apply means add, right <--> += vs = 
 	
 	// Do Not Change
 	void setIntegrator(int integrator) {
 		m_iIntegrator = integrator;
 	}
 
+
 private:
 	// Data Attributes
 	float m_fMass;
 	float m_fStiffness;
 	float m_fDamping;
+
 	int m_iIntegrator;
 
 	// UI Attributes
@@ -54,5 +82,10 @@ private:
 	Point2D m_mouse;
 	Point2D m_trackmouse;
 	Point2D m_oldtrackmouse;
+
+
+	vector<Masspoint> m_vPoints;
+	vector<Spring> m_vSprings; 
+
 };
 #endif
