@@ -57,6 +57,37 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 	}
 }
 
+
+void MassSpringSystemSimulator::simulateTimestep(float timeStep)
+{
+	Vec3 clearforce(0.0f, m_iTestCase > 2 ? EARTH_ACCEL : 0.0f, 0.0f);
+	clearforce += m_externalForce;
+
+	for(Masspoint point : m_vPoints) // clear forces
+	{
+		point.force = clearforce; 
+	}
+
+	for (Spring s : m_vSprings)
+	{
+		s.currentLength = sqrt(m_vPoints[s.masspoint1].pos.squaredDistanceTo(m_vPoints[s.masspoint2].pos));
+		Vec3 force = s.stiffness * (s.currentLength - s.initialLength) *  ((m_vPoints[s.masspoint1].pos - m_vPoints[s.masspoint2].pos) / s.currentLength);
+		m_vPoints[s.masspoint1].force += force;
+		m_vPoints[s.masspoint2].force += force;
+		
+	}
+
+
+	TODO MARKER!!!
+
+	//TODO:
+	//integrate Position
+	//integrate Velocities
+	//collision detection
+}
+
+
+
 void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	const Vec3 colPoints(1.0f, 0.0f, 0.0f); 

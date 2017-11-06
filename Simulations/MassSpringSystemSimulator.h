@@ -8,6 +8,8 @@
 #define MIDPOINT 2
 // Do Not Change
 
+#define EARTH_ACCEL GamePhysics::Real(9.81)
+
 struct Masspoint
 {
 	Masspoint(Vec3 _pos, Vec3 _velocity, bool _fixed, float _mass) : pos(_pos), velocity(_velocity), force(0.0f, 0.0f, 0.0f), fixed(_fixed), mass(_mass)
@@ -70,6 +72,13 @@ public:
 
 
 private:
+
+	void integrateEuler(float deltaTime); 
+	void integrateMidpoint(float deltaTime);
+	void integrateLeapFrog(float deltaTime);
+
+	void (MassSpringSystemSimulator::*integrators[3])(float) = { &integrateEuler , &integrateMidpoint , &integrateLeapFrog };
+
 	// Data Attributes
 	float m_fMass;
 	float m_fStiffness;
