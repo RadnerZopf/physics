@@ -57,6 +57,10 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 	}
 }
 
+void MassSpringSystemSimulator::externalForcesCalculations(float timeElapsed)
+{
+}
+
 
 void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 {
@@ -78,7 +82,7 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 	}
 
 
-	TODO MARKER!!!
+	//TODO MARKER!!!
 
 	//TODO:
 	//integrate Position
@@ -99,7 +103,9 @@ void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateCont
 	}
 	for (Spring s : m_vSprings)
 	{
+		DUC->beginLine();
 		DUC->drawLine(m_vPoints[s.masspoint1].pos, colLines, m_vPoints[s.masspoint2].pos, colLines);
+		DUC->endLine();
 	}
 
 }
@@ -113,6 +119,18 @@ int MassSpringSystemSimulator::addMassPoint(Vec3 position, Vec3 velocity, bool i
 void MassSpringSystemSimulator::addSpring(int masspoint1, int masspoint2, float initialLength, float stiffness) // stiffness == -1 -> use m_fStiffness
 {
 	m_vSprings.push_back(Spring(masspoint1, masspoint2, initialLength, stiffness == -1 ? m_fStiffness : stiffness));
+}
+
+void MassSpringSystemSimulator::integrateEuler(float deltaTime)
+{
+}
+
+void MassSpringSystemSimulator::integrateMidpoint(float deltaTime)
+{
+}
+
+void MassSpringSystemSimulator::integrateLeapFrog(float deltaTime)
+{
 }
 
 void MassSpringSystemSimulator::onClick(int x, int y)

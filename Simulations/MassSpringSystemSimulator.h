@@ -77,7 +77,7 @@ private:
 	void integrateMidpoint(float deltaTime);
 	void integrateLeapFrog(float deltaTime);
 
-	void (MassSpringSystemSimulator::*integrators[3])(float) = { &integrateEuler , &integrateMidpoint , &integrateLeapFrog };
+	void (MassSpringSystemSimulator::*integrators[3])(float) = { &MassSpringSystemSimulator::integrateEuler , &MassSpringSystemSimulator::integrateMidpoint , &MassSpringSystemSimulator::integrateLeapFrog };
 
 	// Data Attributes
 	float m_fMass;
