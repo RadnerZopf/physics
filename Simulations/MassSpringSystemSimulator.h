@@ -84,7 +84,9 @@ private:
 	float m_fStiffness;
 	float m_fDamping;
 
-	int m_iIntegrator;
+	float m_fFixedTimestep = -1; 
+
+	int m_iIntegrator = EULER;
 
 	// UI Attributes
 	Vec3 m_externalForce;
