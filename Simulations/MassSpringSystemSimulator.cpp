@@ -144,17 +144,21 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 	{
 		s.currentLength = sqrt(m_vPoints[s.masspoint1].pos.squaredDistanceTo(m_vPoints[s.masspoint2].pos));
 		Vec3 force = s.stiffness * (s.currentLength - s.initialLength) *  ((m_vPoints[s.masspoint1].pos - m_vPoints[s.masspoint2].pos) / s.currentLength);
-		m_vPoints[s.masspoint1].force += force;
-		m_vPoints[s.masspoint2].force += force;
+		m_vPoints[s.masspoint1].force -= force;
+		m_vPoints[s.masspoint2].force -= force;
 		
 	}
 
 
+	for (int i = 0; i< m_vPoints.size(); ++i)
+	{
+		(this->*m_fpIntegrators[m_iIntegrator])(timeStep, i); 
+
+	}
+
 	//TODO MARKER!!!
 
 	//TODO:
-	//integrate Position
-	//integrate Velocities
 	//collision detection
 }
 
@@ -189,17 +193,22 @@ void MassSpringSystemSimulator::addSpring(int masspoint1, int masspoint2, float 
 	m_vSprings.push_back(Spring(masspoint1, masspoint2, initialLength, stiffness == -1 ? m_fStiffness : stiffness));
 }
 
-void MassSpringSystemSimulator::integrateEuler(float deltaTime)
+void MassSpringSystemSimulator::integrateEuler(const float& deltaTime, const int& point)
 {
-	throw "Not Implemented"; 
+	Masspoint& p = m_vPoints[point]; 
+
+	p.pos += deltaTime * p.velocity;
+
+	p.velocity += (p.force - p.velocity * m_fDamping) / p.mass * deltaTime;
+
 }
 
-void MassSpringSystemSimulator::integrateMidpoint(float deltaTime)
+void MassSpringSystemSimulator::integrateMidpoint(const float& deltaTime, const int& point)
 {
 	throw "Not Implemented";
 }
 
-void MassSpringSystemSimulator::integrateLeapFrog(float deltaTime)
+void MassSpringSystemSimulator::integrateLeapFrog(const float& deltaTime, const int& point)
 {
 	throw "Not Implemented";
 }

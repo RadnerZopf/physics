@@ -73,16 +73,16 @@ public:
 
 private:
 
-	void integrateEuler(float deltaTime); 
-	void integrateMidpoint(float deltaTime);
-	void integrateLeapFrog(float deltaTime);
+	inline void integrateEuler(const float& deltaTime, const int& point); 
+	inline void integrateMidpoint(const float& deltaTime, const int& point);
+	inline void integrateLeapFrog(const float& deltaTime, const int& point);
 
-	void (MassSpringSystemSimulator::*integrators[3])(float) = { &MassSpringSystemSimulator::integrateEuler , &MassSpringSystemSimulator::integrateMidpoint , &MassSpringSystemSimulator::integrateLeapFrog };
+	void (MassSpringSystemSimulator::*m_fpIntegrators[3])(const float&, const int&) = { &MassSpringSystemSimulator::integrateEuler , &MassSpringSystemSimulator::integrateMidpoint , &MassSpringSystemSimulator::integrateLeapFrog };
 
 	// Data Attributes
 	float m_fMass;
 	float m_fStiffness;
-	float m_fDamping;
+	float m_fDamping = 0;
 
 	float m_fFixedTimestep = -1; 
 
