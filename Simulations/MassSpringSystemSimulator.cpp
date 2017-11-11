@@ -127,10 +127,36 @@ void MassSpringSystemSimulator::externalForcesCalculations(float timeElapsed)
 {
 }
 
+void MassSpringSystemSimulator::computeElasticForces()
+{
+	for (Spring s : m_vSprings)
+	{
+		s.currentLength = sqrt(m_vPoints[s.masspoint1].pos.squaredDistanceTo(m_vPoints[s.masspoint2].pos));
+		Vec3 force = s.stiffness * (s.currentLength - s.initialLength) *  ((m_vPoints[s.masspoint1].pos - m_vPoints[s.masspoint2].pos) / s.currentLength);
+		m_vPoints[s.masspoint1].force -= force;
+		m_vPoints[s.masspoint2].force += force;
+	}
+
+//#define ISUCK
+#ifdef ISUCK
+	Vec3 clearforce(0.0f, m_iTestCase > 2 ? EARTH_ACCEL : 0.0f, 0.0f);
+	clearforce += m_externalForce;
+
+	Vec3 internalForce; 
+	for (Masspoint p : m_vPoints)
+		internalForce += p.force - clearforce; 
+
+	cout << "internal force after computeElasticForces (should be 0) : " << internalForce << endl; 
+
+#endif //  Deb
+
+
+}
 
 void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 {
 	if (m_fFixedTimestep > 0) timeStep = m_fFixedTimestep; // fixed timestep for demo 1-3
+	
 
 	Vec3 clearforce(0.0f, m_iTestCase > 2 ? EARTH_ACCEL : 0.0f, 0.0f);
 	clearforce += m_externalForce;
@@ -140,21 +166,61 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 		point.force = clearforce; 
 	}
 
-	for (Spring s : m_vSprings)
+	computeElasticForces(); 
+
+	switch (m_iIntegrator)
 	{
-		s.currentLength = sqrt(m_vPoints[s.masspoint1].pos.squaredDistanceTo(m_vPoints[s.masspoint2].pos));
-		Vec3 force = s.stiffness * (s.currentLength - s.initialLength) *  ((m_vPoints[s.masspoint1].pos - m_vPoints[s.masspoint2].pos) / s.currentLength);
-		m_vPoints[s.masspoint1].force -= force;
-		m_vPoints[s.masspoint2].force -= force;
-		
+	case EULER:
+		for (int i = 0; i< m_vPoints.size(); ++i)
+		{
+			Masspoint& p = m_vPoints[i];
+
+			p.pos += timeStep * p.velocity;
+			
+			p.velocity += (p.force - p.velocity * m_fDamping + (m_iTestCase > 1 ? EARTH_ACCEL : Vec3()))*(timeStep / p.mass);
+
+		}
+		break;
+	case MIDPOINT:
+	{
+		float timeDiv2 = timeStep / 2.0;
+
+		//midpoint calc, save original pos + vel in p.tmp...
+		for (int i = 0; i < m_vPoints.size(); ++i)
+		{
+			Masspoint& p = m_vPoints[i];
+			p.tmpPos = p.pos;
+			p.tmpVel = p.velocity;
+
+
+			p.pos += timeDiv2 * p.velocity;
+			p.velocity += (p.force - p.velocity * m_fDamping + (m_iTestCase > 1 ? EARTH_ACCEL : Vec3()))*(timeDiv2 / p.mass);
+
+
+			p.force = clearforce;
+
+		}
+
+		//recalc elastic forces w/ midpoint values
+
+		computeElasticForces();
+
+		//final step
+		for (int i = 0; i < m_vPoints.size(); ++i)
+		{
+			Masspoint& p = m_vPoints[i];
+
+
+			p.pos = p.tmpPos + timeStep * p.velocity;
+			p.velocity = p.tmpVel + (p.force - p.velocity * m_fDamping + (m_iTestCase > 1 ? EARTH_ACCEL : Vec3()))*(timeStep / p.mass);
+
+		}
+		break; 
+	}		
+	case LEAPFROG: 
+		break; 
 	}
 
-
-	for (int i = 0; i< m_vPoints.size(); ++i)
-	{
-		(this->*m_fpIntegrators[m_iIntegrator])(timeStep, i); 
-
-	}
 
 	//TODO MARKER!!!
 
@@ -193,25 +259,6 @@ void MassSpringSystemSimulator::addSpring(int masspoint1, int masspoint2, float 
 	m_vSprings.push_back(Spring(masspoint1, masspoint2, initialLength, stiffness == -1 ? m_fStiffness : stiffness));
 }
 
-void MassSpringSystemSimulator::integrateEuler(const float& deltaTime, const int& point)
-{
-	Masspoint& p = m_vPoints[point]; 
-
-	p.pos += deltaTime * p.velocity;
-
-	p.velocity += (p.force - p.velocity * m_fDamping) / p.mass * deltaTime;
-
-}
-
-void MassSpringSystemSimulator::integrateMidpoint(const float& deltaTime, const int& point)
-{
-	throw "Not Implemented";
-}
-
-void MassSpringSystemSimulator::integrateLeapFrog(const float& deltaTime, const int& point)
-{
-	throw "Not Implemented";
-}
 
 void MassSpringSystemSimulator::onClick(int x, int y)
 {

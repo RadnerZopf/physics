@@ -18,6 +18,7 @@ struct Masspoint
 	}
 
 	Vec3 pos, velocity, force; 
+	Vec3 tmpPos, tmpVel; 
 	float mass;
 	bool fixed; 
 } ;
@@ -73,11 +74,8 @@ public:
 
 private:
 
-	inline void integrateEuler(const float& deltaTime, const int& point); 
-	inline void integrateMidpoint(const float& deltaTime, const int& point);
-	inline void integrateLeapFrog(const float& deltaTime, const int& point);
 
-	void (MassSpringSystemSimulator::*m_fpIntegrators[3])(const float&, const int&) = { &MassSpringSystemSimulator::integrateEuler , &MassSpringSystemSimulator::integrateMidpoint , &MassSpringSystemSimulator::integrateLeapFrog };
+	void computeElasticForces(); 
 
 	// Data Attributes
 	float m_fMass;
