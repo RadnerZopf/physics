@@ -29,6 +29,8 @@ void MassSpringSystemSimulator::initUI(DrawingUtilitiesClass * DUC)
 	case 4:break; // Leap Frog
 	default:break;
 	}
+	TwAddVarRW(DUC->g_pTweakBar, "DrawForce and vel", TW_TYPE_BOOLCPP, &m_bDrawForce, "");
+
 }
 
 void MassSpringSystemSimulator::reset()
@@ -53,7 +55,7 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 
 	switch (m_iTestCase)
 	{
-	case 0:
+	case 0:// single step
 		cout << "simple step - integrator : " + m_iIntegrator << endl;
 
 		this->setMass(10.0);
@@ -68,13 +70,13 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 
 		this->simulateTimestep(0.1);
 
-		for (int i = 0; i < m_vPoints.size(); ++i) 
+		for (int i = 0; i < m_vPoints.size(); ++i)
 		{
-			cout << "Point " << i <<":\n\tPosition:\t" << m_vPoints[i].pos << "\n\tVelocity:\t" << m_vPoints[i].velocity << endl; 
+			cout << "Point " << i << ":\n\tPosition:\t" << m_vPoints[i].pos << "\n\tVelocity:\t" << m_vPoints[i].velocity << endl;
 		}
 
-		break; // simple step
-	case 1:
+		break;
+	case 1:// simple Euler
 		cout << "simple Euler" << endl;
 
 		m_iIntegrator = EULER;
@@ -91,8 +93,8 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 		this->addSpring(0, 1, 1.0);
 
 
-		break; // simple Euler
-	case 2:
+		break;
+	case 2:// simple Midpoint 
 		cout << "simple Midpoint" << endl;
 
 		m_iIntegrator = MIDPOINT;
@@ -107,16 +109,75 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 
 		this->addSpring(0, 1, 1.0);
 
-		break; // simple Midpoint 
-	case 3:
+		break;
+	case 3:// Complex sim
+	{
 		cout << "Complex sim" << endl;
-		break; // Complex sim
-	case 5:
+
+		int pointOffset = getNumberOfMassPoints();
+		int springOffset = getNumberOfSprings();
+
+		float startpos = -0.7f; 
+		int pointcount = 15;
+		float totalMass = 20;
+		float springLength = 0.1;
+		float diagLength = sqrt(2 * springLength* springLength);
+		float stiffness = 0.0001;
+
+		for (int i = 0; i < pointcount; ++i)
+		{
+			m_vPoints.push_back(Masspoint(Vec3(startpos, -0.2f, startpos + i*springLength), Vec3(), false, totalMass / (pointcount * pointcount), 1));
+		}
+
+		for (int i = 1; i < pointcount; ++i) // make a pointcoountXpointcoount MP grid for some cloth like stuff
+		{
+			m_vPoints.push_back(Masspoint(Vec3(startpos + i*springLength, -0.2f, startpos), Vec3(), false, totalMass / (pointcount * pointcount), 1));
+
+
+			for (int j = 1; j < pointcount; ++j)
+			{
+				m_vPoints.push_back(Masspoint(Vec3(startpos + i*springLength, -0.2f, startpos + j*springLength), Vec3(), false, totalMass / (pointcount * pointcount), 1));
+
+				int q0 = pointOffset + (i - 1) * pointcount + j - 1;
+				int q1 = q0 + 1;
+				int q2 = q0 + pointcount;
+				int q3 = q2 + 1;
+
+				m_vSprings.push_back(Spring(q0, q1, springLength, stiffness));
+				m_vSprings.push_back(Spring(q0, q2, springLength, stiffness));
+				m_vSprings.push_back(Spring(q0, q3, diagLength, stiffness));
+				m_vSprings.push_back(Spring(q1, q2, diagLength, stiffness));
+
+			}
+
+
+			int e0 = pointOffset + (i) * pointcount - 1;
+			int e1 = e0 + pointcount;
+
+			m_vSprings.push_back(Spring(e0, e1, springLength, stiffness));
+
+		}
+
+		for (int j = 0; j < pointcount-1; ++j)
+		{
+			int q0 = pointOffset + (pointcount-1) * pointcount + j;
+			int q1 = q0 + 1;
+			m_vSprings.push_back(Spring(q0, q1, springLength, stiffness));
+		}
+
+		m_vPoints[pointOffset].fixed = true;
+		m_vPoints[pointOffset + pointcount - 1].fixed = true;
+		m_vPoints[pointOffset + pointcount * (pointcount-1)].fixed = true;
+		m_vPoints[pointOffset + pointcount * pointcount - 1].fixed = true;
+
+		break;
+	}
+	case 5:// Leap Frog
 		cout << "Leap Frog" << endl;
 
 		m_iIntegrator = LEAPFROG; 
 
-		break; // Leap Frog
+		break; 
 	default:
 		cout << "Empty Test!\n";
 		break;
@@ -158,7 +219,7 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 	if (m_fFixedTimestep > 0) timeStep = m_fFixedTimestep; // fixed timestep for demo 1-3
 	
 
-	Vec3 clearforce(0.0f, m_iTestCase > 2 ? EARTH_ACCEL : 0.0f, 0.0f);
+	Vec3 clearforce(0.0f, 0.0f, 0.0f);
 	clearforce += m_externalForce;
 
 	for(Masspoint point : m_vPoints) // clear forces
@@ -174,10 +235,13 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 		for (int i = 0; i< m_vPoints.size(); ++i)
 		{
 			Masspoint& p = m_vPoints[i];
+			if (p.fixed) continue; 
+
+			
 
 			p.pos += timeStep * p.velocity;
 			
-			p.velocity += (p.force - p.velocity * m_fDamping + (m_iTestCase > 1 ? EARTH_ACCEL : Vec3()))*(timeStep / p.mass);
+			p.velocity += (p.force /*- p.velocity * m_fDamping*/ + (m_iTestCase == 4 ? Vec3(0.0f, EARTH_ACCEL, 0.0f) : Vec3()))*(timeStep / p.mass);
 
 		}
 		break;
@@ -189,12 +253,14 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 		for (int i = 0; i < m_vPoints.size(); ++i)
 		{
 			Masspoint& p = m_vPoints[i];
+			if (p.fixed) continue;
+
 			p.tmpPos = p.pos;
 			p.tmpVel = p.velocity;
 
 
 			p.pos += timeDiv2 * p.velocity;
-			p.velocity += (p.force - p.velocity * m_fDamping + (m_iTestCase > 1 ? EARTH_ACCEL : Vec3()))*(timeDiv2 / p.mass);
+			p.velocity += (p.force /*- p.velocity * m_fDamping*/ + (m_iTestCase == 4 ? Vec3(0.0f, EARTH_ACCEL, 0.0f) : Vec3()))*(timeDiv2 / p.mass);
 
 
 			p.force = clearforce;
@@ -209,10 +275,10 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 		for (int i = 0; i < m_vPoints.size(); ++i)
 		{
 			Masspoint& p = m_vPoints[i];
-
+			if (p.fixed) continue;
 
 			p.pos = p.tmpPos + timeStep * p.velocity;
-			p.velocity = p.tmpVel + (p.force - p.velocity * m_fDamping + (m_iTestCase > 1 ? EARTH_ACCEL : Vec3()))*(timeStep / p.mass);
+			p.velocity = p.tmpVel + (p.force /*- p.velocity * m_fDamping*/ + (m_iTestCase == 4 ? Vec3(0.0f, EARTH_ACCEL, 0.0f) : Vec3()))*(timeStep / p.mass);
 
 		}
 		break; 
@@ -226,6 +292,7 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 
 	//TODO:
 	//collision detection
+	//user interaction
 }
 
 
@@ -233,11 +300,31 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	const Vec3 colPoints(1.0f, 0.0f, 0.0f); 
+	const Vec3 colFixPoints(0.0f, 0.0f, 1.0f);
+
 	const Vec3 colLines(0.0f, 1.0f, 0.0f); 
+	const Vec3 colForce(1.0f, 105.0/255.0, 180/255.0);
+
 	for (Masspoint m : m_vPoints)
 	{
-		DUC->setUpLighting(colPoints, colPoints, 100, colPoints);
+		if(m.fixed)
+			DUC->setUpLighting(colFixPoints, colFixPoints, 100, colFixPoints);
+		else
+			DUC->setUpLighting(colPoints, colPoints, 100, colPoints);
+
 		DUC->drawSphere(m.pos, Vec3(0.01f, 0.01f, 0.01f)); 
+
+
+		if (m_bDrawForce)
+		{
+			DUC->beginLine();
+			DUC->drawLine(m.pos, colForce, m.pos+m.force, colForce);
+			DUC->endLine();
+			DUC->beginLine();
+			DUC->drawLine(m.pos, colForce, m.pos + m.velocity, colFixPoints);
+			DUC->endLine();
+		}
+
 	}
 	for (Spring s : m_vSprings)
 	{

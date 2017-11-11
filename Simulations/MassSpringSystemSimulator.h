@@ -12,7 +12,7 @@
 
 struct Masspoint
 {
-	Masspoint(Vec3 _pos, Vec3 _velocity, bool _fixed, float _mass) : pos(_pos), velocity(_velocity), force(0.0f, 0.0f, 0.0f), fixed(_fixed), mass(_mass)
+	Masspoint(Vec3 _pos, Vec3 _velocity, bool _fixed, float _mass, int _gameObject = 0) : pos(_pos), velocity(_velocity), force(0.0f, 0.0f, 0.0f), fixed(_fixed), mass(_mass), gameObject(_gameObject)
 	{
 
 	}
@@ -21,6 +21,9 @@ struct Masspoint
 	Vec3 tmpPos, tmpVel; 
 	float mass;
 	bool fixed; 
+
+	int gameObject; //indicates to which gameobject the MP belongs ( collision detection ) 
+
 } ;
 
 struct Spring
@@ -92,6 +95,7 @@ private:
 	Point2D m_trackmouse;
 	Point2D m_oldtrackmouse;
 
+	bool m_bDrawForce = false; 
 
 	vector<Masspoint> m_vPoints;
 	vector<Spring> m_vSprings; 
