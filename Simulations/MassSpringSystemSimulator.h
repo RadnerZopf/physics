@@ -8,7 +8,8 @@
 #define MIDPOINT 2
 // Do Not Change
 
-#define EARTH_ACCEL GamePhysics::Real(9.81)
+#define EARTH_ACCEL GamePhysics::Real(-9.81)
+#define FLOOR_Y -0.5f
 
 struct Masspoint
 {
@@ -41,6 +42,15 @@ struct Spring
 	
 };
 
+struct GameObject // might need that at some point, dunno
+{
+	int id = 0; 
+	int pointOffset = 0; 
+	int springOffset = 0; 
+	int pointCount = 0; 
+	int springCount = 0;
+};
+
 class MassSpringSystemSimulator:public Simulator{
 public:
 	// Construtors
@@ -61,7 +71,7 @@ public:
 	void setMass(float mass) {m_fMass = mass;}
 	void setStiffness(float stiffness) { m_fStiffness = stiffness; }
 	void setDampingFactor(float damping) { m_fDamping = damping; }
-	int addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass = -1); // mass == -1 -> use m_fMass
+	int addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass = -1, int gameObject = 0); // mass == -1 -> use m_fMass
 	void addSpring(int masspoint1, int masspoint2, float initialLength, float stiffness = -1); // stiffness == -1 -> use m_fStiffness
 	int getNumberOfMassPoints() { return m_vPoints.size(); }
 	int getNumberOfSprings() { return m_vSprings.size(); }
@@ -99,6 +109,7 @@ private:
 
 	vector<Masspoint> m_vPoints;
 	vector<Spring> m_vSprings; 
+	vector<GameObject> m_vGameObjects;
 
 };
 #endif

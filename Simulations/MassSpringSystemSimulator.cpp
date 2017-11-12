@@ -114,39 +114,56 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 	{
 		cout << "Complex sim" << endl;
 
+
+		this->m_iIntegrator = MIDPOINT; 
+		this->m_fDamping = 0.05;
+
 		int pointOffset = getNumberOfMassPoints();
 		int springOffset = getNumberOfSprings();
 
 		float startpos = -0.7f; 
+		float startY = 0.4f; 
 		int pointcount = 15;
-		float totalMass = 20;
+		float totalMass = 5;
 		float springLength = 0.1;
 		float diagLength = sqrt(2 * springLength* springLength);
-		float stiffness = 0.0001;
+		float stiffness = 50;
+
+
+		GameObject weirdClothyThingamabob;
+		weirdClothyThingamabob.id = 1;
+		weirdClothyThingamabob.pointOffset = pointOffset; 
+		weirdClothyThingamabob.springOffset = springOffset; 
 
 		for (int i = 0; i < pointcount; ++i)
 		{
-			m_vPoints.push_back(Masspoint(Vec3(startpos, -0.2f, startpos + i*springLength), Vec3(), false, totalMass / (pointcount * pointcount), 1));
+			addMassPoint(Vec3(startpos, startY, startpos + i*springLength), Vec3(), false, totalMass / (pointcount * pointcount), 1);
+			weirdClothyThingamabob.pointCount++; // YES, I AM THAT LAZY 
 		}
 
 		for (int i = 1; i < pointcount; ++i) // make a pointcoountXpointcoount MP grid for some cloth like stuff
 		{
-			m_vPoints.push_back(Masspoint(Vec3(startpos + i*springLength, -0.2f, startpos), Vec3(), false, totalMass / (pointcount * pointcount), 1));
+			addMassPoint(Vec3(startpos + i*springLength, startY, startpos), Vec3(), false, totalMass / (pointcount * pointcount), 1);
+			weirdClothyThingamabob.pointCount++; // YES, I AM THAT LAZY 
 
 
 			for (int j = 1; j < pointcount; ++j)
 			{
-				m_vPoints.push_back(Masspoint(Vec3(startpos + i*springLength, -0.2f, startpos + j*springLength), Vec3(), false, totalMass / (pointcount * pointcount), 1));
+				
+				addMassPoint(Vec3(startpos + i*springLength, startY, startpos + j*springLength), Vec3(), false, totalMass / (pointcount * pointcount), 1);
+				weirdClothyThingamabob.pointCount++; // YES, I AM THAT LAZY 
 
 				int q0 = pointOffset + (i - 1) * pointcount + j - 1;
 				int q1 = q0 + 1;
 				int q2 = q0 + pointcount;
 				int q3 = q2 + 1;
+				
+				addSpring(q0, q1, springLength, stiffness);
+				addSpring(q0, q2, springLength, stiffness);
+				addSpring(q0, q3, diagLength, stiffness);
+				addSpring(q1, q2, diagLength, stiffness);
 
-				m_vSprings.push_back(Spring(q0, q1, springLength, stiffness));
-				m_vSprings.push_back(Spring(q0, q2, springLength, stiffness));
-				m_vSprings.push_back(Spring(q0, q3, diagLength, stiffness));
-				m_vSprings.push_back(Spring(q1, q2, diagLength, stiffness));
+				weirdClothyThingamabob.springCount += 4; // YES, I AM THAT LAZY
 
 			}
 
@@ -154,7 +171,8 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 			int e0 = pointOffset + (i) * pointcount - 1;
 			int e1 = e0 + pointcount;
 
-			m_vSprings.push_back(Spring(e0, e1, springLength, stiffness));
+			addSpring(e0, e1, springLength, stiffness);
+			weirdClothyThingamabob.springCount++; // YES, I AM THAT LAZY
 
 		}
 
@@ -163,12 +181,17 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 			int q0 = pointOffset + (pointcount-1) * pointcount + j;
 			int q1 = q0 + 1;
 			m_vSprings.push_back(Spring(q0, q1, springLength, stiffness));
+			weirdClothyThingamabob.springCount++; // YES, I AM THAT LAZY
+
 		}
 
 		m_vPoints[pointOffset].fixed = true;
 		m_vPoints[pointOffset + pointcount - 1].fixed = true;
 		m_vPoints[pointOffset + pointcount * (pointcount-1)].fixed = true;
 		m_vPoints[pointOffset + pointcount * pointcount - 1].fixed = true;
+
+
+		
 
 		break;
 	}
@@ -241,7 +264,10 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 
 			p.pos += timeStep * p.velocity;
 			
-			p.velocity += (p.force /*- p.velocity * m_fDamping*/ + (m_iTestCase == 4 ? Vec3(0.0f, EARTH_ACCEL, 0.0f) : Vec3()))*(timeStep / p.mass);
+			//p.force = internal + external 
+			p.velocity += (p.force - p.velocity * m_fDamping)*(timeStep / p.mass);
+			if (m_iTestCase == 3) // compex sim -> apply gravity
+				p.velocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeStep;
 
 		}
 		break;
@@ -260,8 +286,11 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 
 
 			p.pos += timeDiv2 * p.velocity;
-			p.velocity += (p.force /*- p.velocity * m_fDamping*/ + (m_iTestCase == 4 ? Vec3(0.0f, EARTH_ACCEL, 0.0f) : Vec3()))*(timeDiv2 / p.mass);
+			//p.force = internal + external force
+			p.velocity += (p.force - p.velocity * m_fDamping)*(timeDiv2 / p.mass);
 
+			if (m_iTestCase == 3) // compex sim -> apply gravity
+				p.velocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeDiv2;
 
 			p.force = clearforce;
 
@@ -278,13 +307,27 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 			if (p.fixed) continue;
 
 			p.pos = p.tmpPos + timeStep * p.velocity;
-			p.velocity = p.tmpVel + (p.force /*- p.velocity * m_fDamping*/ + (m_iTestCase == 4 ? Vec3(0.0f, EARTH_ACCEL, 0.0f) : Vec3()))*(timeStep / p.mass);
+			//p.force = internal + external force
+			p.velocity = p.tmpVel + (p.force - p.velocity * m_fDamping)*(timeStep / p.mass);
+			if (m_iTestCase == 3) // compex sim -> apply gravity
+				p.velocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeStep;
 
 		}
 		break; 
 	}		
 	case LEAPFROG: 
 		break; 
+	}
+
+
+	//collision detection for complex sim
+	if (m_iTestCase == 3)
+	{
+		for (Masspoint& p : m_vPoints)
+		{
+			if (p.pos.y < FLOOR_Y) // Floor //<- useful comment
+				p.pos.y = FLOOR_Y; 
+		}
 	}
 
 
@@ -335,9 +378,9 @@ void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateCont
 
 }
 
-int MassSpringSystemSimulator::addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass) // mass == -1 -> use m_fMass
+int MassSpringSystemSimulator::addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass, int gameObject) // mass == -1 -> use m_fMass
 {
-	m_vPoints.push_back(Masspoint(position, velocity, isFixed, mass == -1 ? m_fMass : mass));
+	m_vPoints.push_back(Masspoint(position, velocity, isFixed, mass == -1 ? m_fMass : mass, gameObject));
 	return m_vPoints.size() - 1; 
 }
 
