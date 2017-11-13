@@ -49,6 +49,18 @@ struct GameObject // might need that at some point, dunno
 	int springOffset = 0; 
 	int pointCount = 0; 
 	int springCount = 0;
+	int sphereCount = 0;
+	int sphereOffset = 0;
+};
+
+struct Sphere
+{
+	Sphere(int _masspoint, float _radius) : masspoint(_masspoint), radius(_radius)
+	{
+
+	}
+	int masspoint;
+	float radius;
 };
 
 class MassSpringSystemSimulator:public Simulator{
@@ -64,6 +76,7 @@ public:
 	void notifyCaseChanged(int testCase);
 	void externalForcesCalculations(float timeElapsed);
 	void simulateTimestep(float timeStep);
+	boolean checkPointAgainstSphere(Masspoint mp, Sphere s);
 	void onClick(int x, int y);
 	void onMouse(int x, int y);
 
@@ -73,6 +86,7 @@ public:
 	void setDampingFactor(float damping) { m_fDamping = damping; }
 	int addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass = -1, int gameObject = 0); // mass == -1 -> use m_fMass
 	void addSpring(int masspoint1, int masspoint2, float initialLength, float stiffness = -1); // stiffness == -1 -> use m_fStiffness
+	int addSphere(int masspoint, float mass);
 	int getNumberOfMassPoints() { return m_vPoints.size(); }
 	int getNumberOfSprings() { return m_vSprings.size(); }
 	Vec3 getPositionOfMassPoint(int index) { return m_vPoints[index].pos; }
@@ -110,6 +124,7 @@ private:
 	vector<Masspoint> m_vPoints;
 	vector<Spring> m_vSprings; 
 	vector<GameObject> m_vGameObjects;
+	vector<Sphere> m_vSpheres;
 
 };
 #endif
