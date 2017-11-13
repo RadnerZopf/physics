@@ -129,6 +129,7 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 		float diagLength = sqrt(2 * springLength* springLength);
 		float stiffness = 50;
 
+		int middleOffset = pointOffset / 2 + 1;
 
 		GameObject weirdClothyThingamabob;
 		weirdClothyThingamabob.id = 1;
@@ -180,7 +181,7 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 		{
 			int q0 = pointOffset + (pointcount-1) * pointcount + j;
 			int q1 = q0 + 1;
-			m_vSprings.push_back(Spring(q0, q1, springLength, stiffness));
+			addSpring(q0, q1, springLength, stiffness);
 			weirdClothyThingamabob.springCount++; // YES, I AM THAT LAZY
 
 		}
@@ -221,13 +222,16 @@ void MassSpringSystemSimulator::externalForcesCalculations(float timeElapsed)
 		Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
 		Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
 		// find a proper scale!
-		float inputScale = 0.001f;
+		float inputScale = 0.005f;
 		inputWorld = inputWorld * inputScale;
 
+		/*
 		for (int i = 0; i < m_vPoints.size(); ++i)
 		{
 			m_vPoints[i].velocity += inputWorld;
 		}
+		*/
+		m_externalForce = inputWorld; 
 	}
 }
 
