@@ -17,14 +17,14 @@ void MassSpringSystemSimulator::initUI(DrawingUtilitiesClass * DUC)
 	switch (m_iTestCase)
 	{
 	case 0: // simple step
-		TwAddVarRW(DUC->g_pTweakBar, "Method", TwDefineEnumFromString("Method", "Euler, Midpoint, Leapfrog"), &m_iIntegrator, "");
+		TwAddVarRW(DUC->g_pTweakBar, "Method", TwDefineEnumFromString("Method", "Euler, Leapfrog, Midpoint"), &m_iIntegrator, "");
 		break;
 	case 1:
 		break; // simple Euler
 	case 2:
 		break; // simple Midpoint 
 	case 3:
-		TwAddVarRW(DUC->g_pTweakBar, "Method", TwDefineEnumFromString("Method", "Euler, Midpoint, Leapfrog"), &m_iIntegrator, "");
+		TwAddVarRW(DUC->g_pTweakBar, "Method", TwDefineEnumFromString("Method", "Euler, Leapfrog, Midpoint"), &m_iIntegrator, "");
 		break; // Complex sim
 	case 4:break; // Leap Frog
 	default:break;
