@@ -129,8 +129,6 @@ void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
 		float diagLength = sqrt(2 * springLength* springLength);
 		float stiffness = 50;
 
-		int middleOffset = pointOffset / 2 + 1;
-
 		GameObject weirdClothyThingamabob;
 		weirdClothyThingamabob.id = 1;
 		weirdClothyThingamabob.pointOffset = pointOffset; 
@@ -268,6 +266,8 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 
 	Vec3 clearforce(0.0f, 0.0f, 0.0f);
 	clearforce += m_externalForce;
+
+	m_externalForce = Vec3(); 
 
 	for(Masspoint point : m_vPoints) // clear forces
 	{
