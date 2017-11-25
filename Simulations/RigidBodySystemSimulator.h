@@ -23,20 +23,23 @@ public:
 	void onMouse(int x, int y);
 
 	// ExtraFunctions
-	int getNumberOfRigidBodies();
-	Vec3 getPositionOfRigidBody(int i);
-	Vec3 getLinearVelocityOfRigidBody(int i);
-	Vec3 getAngularVelocityOfRigidBody(int i);
-	void applyForceOnBody(int i, Vec3 loc, Vec3 force);
-	void addRigidBody(Vec3 position, Vec3 size, int mass);
-	void setOrientationOf(int i,Quat orientation);
-	void setVelocityOf(int i, Vec3 velocity);
+	int getNumberOfRigidBodies() { return m_vRigidBodies.size(); }
+	Vec3 getPositionOfRigidBody(int i) { return m_vRigidBodies[i].position; }
+	Vec3 getLinearVelocityOfRigidBody(int i) { return m_vRigidBodies[i].linearVelocity; }
+	Vec3 getAngularVelocityOfRigidBody(int i) { return m_vRigidBodies[i].angularVelocity; }
+	void applyForceOnBody(int i, Vec3 loc, Vec3 force) { m_vRigidBodies[i].applyForce(loc, force); }
+	void addRigidBody(Vec3 position, Vec3 size, int mass, Quat _orientation = Quat(), Vec3 _linearVelocity = Vec3(), Vec3 _angularVelocity = Vec3()) { m_vRigidBodies.push_back(RigidBodySystem(position, size, mass, _orientation, _angularVelocity)); }
+	void setOrientationOf(int i,Quat orientation) { m_vRigidBodies[i].orientation = orientation; }
+	void setVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].linearVelocity = velocity; }
 
 private:
 	// Attributes
 	// add your RigidBodySystem data members, for e.g.,
 	// RigidBodySystem * m_pRigidBodySystem; 
 	Vec3 m_externalForce;
+
+
+	vector<RigidBodySystem> m_vRigidBodies; 
 
 	// UI Attributes
 	Point2D m_mouse;
