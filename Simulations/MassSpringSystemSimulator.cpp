@@ -396,7 +396,7 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 	//user interaction
 }
 
-boolean MassSpringSystemSimulator::checkPointAgainstSphere(Masspoint mp, Sphere s)
+bool MassSpringSystemSimulator::checkPointAgainstSphere(Masspoint mp, Sphere s)
 {
 	double dist = sqrt(pow(mp.pos.x - m_vPoints[s.masspoint].pos.x, 2.0) + pow(mp.pos.y - m_vPoints[s.masspoint].pos.y, 2.0) + pow(mp.pos.z - m_vPoints[s.masspoint].pos.z, 2.0));
 

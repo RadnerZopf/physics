@@ -76,7 +76,7 @@ public:
 	void notifyCaseChanged(int testCase);
 	void externalForcesCalculations(float timeElapsed);
 	void simulateTimestep(float timeStep);
-	boolean checkPointAgainstSphere(Masspoint mp, Sphere s);
+	bool checkPointAgainstSphere(Masspoint mp, Sphere s);
 	void onClick(int x, int y);
 	void onMouse(int x, int y);
 
