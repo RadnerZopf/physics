@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include "util/vectorbase.h"
+#include "util/matrixbase.h"
 #include "DrawingUtilitiesClass.h"
 
 using std::vector; 
@@ -19,7 +20,7 @@ public:
 
 	void applyForce(Vec3 loc, Vec3 force);
 
-
+	Mat4& getWorldMat(); 
 
 
 	Vec3 position;
@@ -30,7 +31,8 @@ public:
 	float mass; 
 
 private: 
-
+	GamePhysics::Mat4 worldMat; 
+	GamePhysics::Mat4 scaleMat;
 	vector<Vec3> points; 
 
 };

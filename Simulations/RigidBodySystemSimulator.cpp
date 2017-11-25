@@ -7,6 +7,9 @@ RigidBodySystemSimulator::RigidBodySystemSimulator()
 
 }
 
+
+
+
 const char * RigidBodySystemSimulator::getTestCasesStr()
 {
 	return "Demo 1 - one step, Demo 2 - single Body, Demo 3 - two Bodies, Demo 4 - Complex sim";
@@ -65,7 +68,42 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 }
 
 
+void RigidBodySystemSimulator::simulateTimestep(float timeStep)
+{
 
+}
+
+
+void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
+{
+	for (RigidBodySystem body : m_vRigidBodies)
+	{
+		DUC->setUpLighting(Vec3(0, 0, 0), 0.4*Vec3(1, 1, 1), 2000.0, Vec3(0.5, 0.5, 0.5));
+		DUC->drawRigidBody(body.getWorldMat());
+	}
+}
+
+//copied form MassSpring
+void RigidBodySystemSimulator::externalForcesCalculations(float timeElapsed)
+{
+	//calculate and apply mouse force to all m_vPoints
+	Point2D mouseDiff;
+	mouseDiff.x = m_trackmouse.x - m_oldtrackmouse.x;
+	mouseDiff.y = m_trackmouse.y - m_oldtrackmouse.y;
+
+	if (mouseDiff.x != 0 || mouseDiff.y != 0)
+	{
+		Mat4 worldViewInv = Mat4(DUC->g_camera.GetWorldMatrix() * DUC->g_camera.GetViewMatrix());
+		worldViewInv = worldViewInv.inverse();
+		Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
+		Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
+		// find a proper scale!
+		float inputScale = 0.005f;
+		inputWorld = inputWorld * inputScale;
+
+		m_externalForce = inputWorld;
+	}
+}
 
 void RigidBodySystemSimulator::onClick(int x, int y)
 {
