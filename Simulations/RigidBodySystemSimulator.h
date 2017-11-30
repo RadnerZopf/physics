@@ -31,6 +31,7 @@ public:
 	void addRigidBody(Vec3 position, Vec3 size, int mass, Quat _orientation = Quat(), Vec3 _linearVelocity = Vec3(), Vec3 _angularVelocity = Vec3()) { m_vRigidBodies.push_back(RigidBodySystem(position, size, mass, _orientation, _angularVelocity)); }
 	void setOrientationOf(int i,Quat orientation) { m_vRigidBodies[i].orientation = orientation; }
 	void setVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].linearVelocity = velocity; }
+	void setAngularVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].angularVelocity = velocity; }
 
 private:
 	// Attributes

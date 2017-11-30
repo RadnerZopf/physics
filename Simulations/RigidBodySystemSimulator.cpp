@@ -59,6 +59,8 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		break;
 	case 1:
 		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2);
+		this->setVelocityOf(0, Vec3(0.05f, 0.05f, 0.2f));
+		this->setAngularVelocityOf(0, Vec3(1.1f, 1.2f, 1.3f));
 
 		break; //  single Body
 	case 2:
@@ -74,17 +76,24 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 {
 
 
-	for (RigidBodySystem rigidBody : m_vRigidBodies)
+	for (int i = 0; i <m_vRigidBodies.size(); i++)
 	{
+		RigidBodySystem &rigidBody = m_vRigidBodies[i];
+
 		//euler
 		rigidBody.position += timeStep * rigidBody.linearVelocity;
 		rigidBody.linearVelocity += timeStep / rigidBody.mass * m_externalForce;
+		
+		//rigidBody.orientation.x += timeStep / 2 * rigidBody.angularVelocity.x * rigidBody.orientation.x;
+		//rigidBody.orientation.y += timeStep / 2 * rigidBody.angularVelocity.y * rigidBody.orientation.y;
+		//rigidBody.orientation.z += timeStep / 2 * rigidBody.angularVelocity.z * rigidBody.orientation.z;
+		//rigidBody.orientation /= rigidBody.orientation.norm();
 
-		rigidBody.orientation.x += timeStep / 2 * rigidBody.angularVelocity.x * rigidBody.orientation.x;
-		rigidBody.orientation.y += timeStep / 2 * rigidBody.angularVelocity.y * rigidBody.orientation.y;
-		rigidBody.orientation.z += timeStep / 2 * rigidBody.angularVelocity.z * rigidBody.orientation.z;
+		//cout << "pos: " << rigidBody.position << endl;
+		//cout << "lvel: " << rigidBody.linearVelocity << endl;
+		//cout << "avel: " << rigidBody.angularVelocity << endl;
 
-		rigidBody.orientation.norm();
+
 
 		
 	}
