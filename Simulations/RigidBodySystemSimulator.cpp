@@ -58,6 +58,8 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2); 
 		break;
 	case 1:
+		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2);
+
 		break; //  single Body
 	case 2:
 		break; //  two Bodies
@@ -71,13 +73,28 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 {
 
-}
 
+	for (RigidBodySystem rigidBody : m_vRigidBodies)
+	{
+		//euler
+		rigidBody.position += timeStep * rigidBody.linearVelocity;
+		rigidBody.linearVelocity += timeStep / rigidBody.mass * m_externalForce;
+
+		rigidBody.orientation.x += timeStep / 2 * rigidBody.angularVelocity.x * rigidBody.orientation.x;
+		rigidBody.orientation.y += timeStep / 2 * rigidBody.angularVelocity.y * rigidBody.orientation.y;
+		rigidBody.orientation.z += timeStep / 2 * rigidBody.angularVelocity.z * rigidBody.orientation.z;
+
+		rigidBody.orientation.norm();
+
+		
+	}
+}
 
 void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	for (RigidBodySystem body : m_vRigidBodies)
 	{
+		
 		DUC->setUpLighting(Vec3(0, 0, 0), 0.4*Vec3(1, 1, 1), 2000.0, Vec3(0.5, 0.5, 0.5));
 		DUC->drawRigidBody(body.getWorldMat());
 	}
