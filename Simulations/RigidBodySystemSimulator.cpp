@@ -52,19 +52,36 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 
 	m_vRigidBodies.clear(); 
 
+
+	Quat rotate90Z = Quat(sin(XMConvertToRadians(90 / 2)), 0, 0, cos(XMConvertToRadians(90 / 2))); 
+	rotate90Z /= rotate90Z.norm(); 
+
+	Quat rotate90YZ = Quat(sin(XMConvertToRadians(90 / 2)), 0, cos(XMConvertToRadians(90 / 2)), cos(XMConvertToRadians(90 / 2)));
+	rotate90YZ /= rotate90YZ.norm();
+
 	switch (m_iTestCase)
 	{
 	case 0: // one step
-		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2); 
+		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2, rotate90Z,  Vec3(), Vec3());
+		applyForceOnBody(0, Vec3(0.3, 0.5, 0.25), Vec3(1.0, 1.0, 0.0));
+
+		simulateTimestep(2.0); 
+
+		cout << "Position:\t" << m_vRigidBodies[0].position << "\nLinear Vel:\t " << m_vRigidBodies[0].linearVelocity << "\n Angular vel: \t" << m_vRigidBodies[0].angularVelocity << endl; 
+
 		break;
 	case 1:
-		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2);
-		this->setVelocityOf(0, Vec3(0.05f, 0.05f, 0.2f));
-		this->setAngularVelocityOf(0, Vec3(1.1f, 1.2f, 1.3f));
-		this->setOrientationOf(0, Quat(0.0f, 0.0f, 0.0f, 1.1f));
+		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2, rotate90Z, Vec3(), Vec3());
+		applyForceOnBody(0, Vec3(0.3, 0.5, 0.25), Vec3(1.0, 1.0, 0.0));
+
 
 		break; //  single Body
 	case 2:
+
+		addRigidBody(Vec3(-2,0,0), Vec3(1.0f, 1.0f, 0.5f), 2, rotate90YZ, Vec3(2.0,0.0,0.0), Vec3());
+		addRigidBody(Vec3(2,0,0), Vec3(1.0f, 0.6f, 0.5f), 5, Quat(0.0,0.0,0.0,1.0), Vec3( -3.0, 0.0, 0.0), Vec3());
+
+
 		break; //  two Bodies
 	case 3:
 		break; // Complex sim
@@ -76,6 +93,9 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 {
 
+	if (m_iTestCase == 2) {
+		cout << "need bp"<< endl; 
+	}
 
 	for (int i = 0; i <m_vRigidBodies.size(); i++)
 	{
@@ -83,18 +103,21 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 
 		//euler
 		rigidBody.position += timeStep * rigidBody.linearVelocity;
-		rigidBody.linearVelocity += timeStep / rigidBody.mass * m_externalForce;
-		
-		rigidBody.orientation.x += timeStep / 2 * rigidBody.angularVelocity.x * rigidBody.orientation.x;
-		rigidBody.orientation.y += timeStep / 2 * rigidBody.angularVelocity.y * rigidBody.orientation.y;
-		rigidBody.orientation.z += timeStep / 2 * rigidBody.angularVelocity.z * rigidBody.orientation.z;
-		rigidBody.orientation /= rigidBody.orientation.norm();
+		rigidBody.linearVelocity += timeStep / rigidBody.mass * rigidBody.force;
+
+
+		Quat q = Quat(0.0, rigidBody.angularVelocity.x, rigidBody.angularVelocity.y, rigidBody.angularVelocity.z);
+
+		rigidBody.orientation += timeStep / 2 * q * rigidBody.orientation; 
+
+		rigidBody.angularMomentum += timeStep * rigidBody.torque; 
+
+		rigidBody.angularVelocity = rigidBody.getInertiaTensor() * rigidBody.angularMomentum; 
+
 
 		//cout << "pos: " << rigidBody.position << endl;
 		//cout << "lvel: " << rigidBody.linearVelocity << endl;
 		//cout << "avel: " << rigidBody.angularVelocity << endl;
-
-
 
 		m_externalForce = Vec3();
 	}

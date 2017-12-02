@@ -22,6 +22,26 @@ RigidBodySystem::RigidBodySystem(Vec3 _position, Vec3 _size, float _mass, Quat _
 
 	scaleMat.initScaling(size.x, size.y, size.z); 
 
+
+	double tensorarr[16] = { size.x * size.x,	-size.x*size.y,		-size.x*size.z,		0,
+							-size.x * size.y,	size.y * size.y,	-size.y * size.z,	0,
+							-size.x * size.z,	-size.y * size.z,	size.z * size.Z,	0,
+								0	,				0		,			0		,		1 };
+	inertiaTensor.initFromArray(tensorarr);
+	inertiaTensor = inertiaTensor.inverse();
+
+}
+
+
+Mat4 RigidBodySystem::getInertiaTensor()
+{
+	Mat4 rot = orientation.getRotMat(); 
+
+	Mat4 rotT = rot; 
+	rotT.transpose(); 
+
+
+	return rot * inertiaTensor * rotT; 
 }
 
 
@@ -30,9 +50,15 @@ RigidBodySystem::~RigidBodySystem()
 }
 
 
-void RigidBodySystem::applyForce(Vec3 loc, Vec3 force)
+void RigidBodySystem::applyForce(Vec3 _loc, Vec3 _force)
 {
-	throw "TODO"; 
+	force += _force; 
+
+	XMVECTOR xmloc = _loc.toDirectXVector(); 
+	XMVECTOR xmforce = _force.toDirectXVector(); 
+	XMVECTOR xmtorque = XMVector3Cross(xmloc, xmforce); 
+	torque += Vec3(xmtorque); 
+
 }
 
 
