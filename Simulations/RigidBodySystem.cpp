@@ -3,8 +3,8 @@
 using namespace GamePhysics;
 
 
-RigidBodySystem::RigidBodySystem(Vec3 _position, Vec3 _size, float _mass, Quat _orientation, Vec3 _linearVelocity, Vec3 _angularVelocity) :
-	position(_position), mass(_mass), orientation(_orientation), linearVelocity(_linearVelocity), angularVelocity(_angularVelocity), size(_size)
+RigidBodySystem::RigidBodySystem(Vec3 _position, Vec3 _size, float _mass, Quat _orientation, Vec3 _linearVelocity, Vec3 _angularVelocity, float _bounciness) :
+	position(_position), mass(_mass), orientation(_orientation), linearVelocity(_linearVelocity), angularVelocity(_angularVelocity), size(_size), bouncieness(_bounciness)
 {
 	//scaled quad // prob not gona need dis
 	points.push_back(Vec3(size.x, size.y, size.z)); 

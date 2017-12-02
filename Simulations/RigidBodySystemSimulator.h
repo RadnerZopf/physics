@@ -28,12 +28,22 @@ public:
 	Vec3 getLinearVelocityOfRigidBody(int i) { return m_vRigidBodies[i].linearVelocity; }
 	Vec3 getAngularVelocityOfRigidBody(int i) { return m_vRigidBodies[i].angularVelocity; }
 	void applyForceOnBody(int i, Vec3 loc, Vec3 force) { m_vRigidBodies[i].applyForce(loc, force); }
-	void addRigidBody(Vec3 position, Vec3 size, int mass, Quat _orientation = Quat(0.0f, 0.0f, 0.0f, 1.0f), Vec3 _linearVelocity = Vec3(), Vec3 _angularVelocity = Vec3()) { m_vRigidBodies.push_back(RigidBodySystem(position, size, mass, _orientation, _linearVelocity, _angularVelocity)); }
+	void addRigidBody(Vec3 position, Vec3 size, int mass, Quat _orientation = Quat(0.0f, 0.0f, 0.0f, 1.0f), Vec3 _linearVelocity = Vec3(), Vec3 _angularVelocity = Vec3(), float bounciness = 0.0f) { m_vRigidBodies.push_back(RigidBodySystem(position, size, mass, _orientation, _linearVelocity, _angularVelocity, bounciness)); }
 	void setOrientationOf(int i,Quat orientation) { m_vRigidBodies[i].orientation = orientation; }
 	void setVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].linearVelocity = velocity; }
 	void setAngularVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].angularVelocity = velocity; }
 
 private:
+
+	//much lazy
+	Vec3 cross(Vec3& a, Vec3& b)
+	{
+		XMVECTOR xmloc = a.toDirectXVector();
+		XMVECTOR xmforce = b.toDirectXVector();
+		XMVECTOR xmtorque = XMVector3Cross(xmloc, xmforce);
+		return Vec3(xmtorque);
+	}
+
 
 	// Attributes
 	// add your RigidBodySystem data members, for e.g.,

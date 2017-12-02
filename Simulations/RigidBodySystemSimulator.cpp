@@ -79,7 +79,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 	case 2:
 
 		addRigidBody(Vec3(-2,0,0), Vec3(1.0f, 1.0f, 0.5f), 2, rotate90YZ, Vec3(2.0,0.0,0.0), Vec3());
-		addRigidBody(Vec3(2,0,0), Vec3(1.0f, 0.6f, 0.5f), 5, Quat(0.0,0.0,0.0,1.0), Vec3( -3.0, 0.0, 0.0), Vec3());
+		addRigidBody(Vec3(2,0,0), Vec3(1.0f, 0.6f, 0.5f), 7, Quat(0.0,0.0,0.0,1.0), Vec3( -3.0, 0.0, 0.0), Vec3());
 
 
 		break; //  two Bodies
@@ -88,27 +88,27 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 	default:break;
 	}
 }
-
-
+ 
 void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 {
 
-	if (m_iTestCase == 2) {
-		cout << "need bp"<< endl; 
-	}
 
 	for (int i = 0; i <m_vRigidBodies.size(); i++)
 	{
+
 		RigidBodySystem &rigidBody = m_vRigidBodies[i];
+
+		//not sure how to plare cursor meaningful in 3D; this has an "ok" effect
+		rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
 
 		//euler
 		rigidBody.position += timeStep * rigidBody.linearVelocity;
 		rigidBody.linearVelocity += timeStep / rigidBody.mass * rigidBody.force;
+		
 
-
-		Quat q = Quat(0.0, rigidBody.angularVelocity.x, rigidBody.angularVelocity.y, rigidBody.angularVelocity.z);
-
-		rigidBody.orientation += timeStep / 2 * q * rigidBody.orientation; 
+		Quat tmp = Quat(0, rigidBody.angularVelocity.x * rigidBody.orientation.x, rigidBody.angularVelocity.y * rigidBody.orientation.y, rigidBody.angularVelocity.z * rigidBody.orientation.z );
+		rigidBody.orientation += timeStep / 2 * tmp;
+		rigidBody.orientation = rigidBody.orientation.unit(); 
 
 		rigidBody.angularMomentum += timeStep * rigidBody.torque; 
 
@@ -118,9 +118,54 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 		//cout << "pos: " << rigidBody.position << endl;
 		//cout << "lvel: " << rigidBody.linearVelocity << endl;
 		//cout << "avel: " << rigidBody.angularVelocity << endl;
-
-		m_externalForce = Vec3();
 	}
+	//clear ext force in case input stops (otherwise we would constantly add the last input force) 
+	m_externalForce = Vec3();
+
+	//collision detection
+	for (int i = 0; i < m_vRigidBodies.size(); ++i)
+	{
+		for (int j = i + 1; j < m_vRigidBodies.size(); ++j)
+		{
+			RigidBodySystem& a = m_vRigidBodies[i]; 
+			RigidBodySystem& b = m_vRigidBodies[j]; 
+
+			CollisionInfo col = checkCollisionSAT(a.getWorldMat(), b.getWorldMat()); //redundant worldmat calculations here, future me should fix that
+			
+
+
+			if (col.isValid)
+			{
+
+				
+				Vec3 vrel = col.normalWorld * (a.linearVelocity + cross(a.angularVelocity, col.collisionPointWorld) - b.linearVelocity - cross(b.angularVelocity, col.collisionPointWorld)); 
+
+				//velocity and col- normal have opposite direction
+				if (vrel.x + vrel.y + vrel.z > 0)//collision already resolved, do noting
+					continue; 
+				
+				cout << "Valid Collision" << endl; 
+
+				CollisionInfo colRev = checkCollisionSAT(b.getWorldMat(), a.getWorldMat()); // what was xa and ab again?
+				Vec3 somethingINeedToDot = cross(a.getInertiaTensor() * cross(col.collisionPointWorld, col.normalWorld), col.collisionPointWorld)
+					+ cross(b.getInertiaTensor() * cross(colRev.collisionPointWorld, col.normalWorld), colRev.collisionPointWorld);
+				double denom = 1 / a.mass + 1 / b.mass + (somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z);
+
+				somethingINeedToDot = vrel; 
+				double impA = -(1 + a.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
+				double impB = -(1 + b.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
+
+				a.linearVelocity += (impA / a.mass) * col.normalWorld; 
+				b.linearVelocity -= (impB / b.mass) * col.normalWorld;
+
+				a.angularMomentum += cross(col.collisionPointWorld, impA * col.normalWorld);
+				b.angularMomentum -= cross(col.collisionPointWorld, impB * col.normalWorld);
+
+			}
+		}
+	}
+
+
 }
 
 void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
@@ -148,7 +193,7 @@ void RigidBodySystemSimulator::externalForcesCalculations(float timeElapsed)
 		Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
 		Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
 		// find a proper scale!
-		float inputScale = 0.1f;
+		float inputScale = 0.0001f;
 		inputWorld = inputWorld * inputScale;
 
 		m_externalForce = inputWorld;

@@ -7,6 +7,7 @@
 #include "util/vectorbase.h"
 #include "util/matrixbase.h"
 #include "DrawingUtilitiesClass.h"
+#include "collisionDetect.h"
 
 using std::vector; 
 
@@ -15,7 +16,7 @@ class RigidBodySystem
 
 
 public:
-	 RigidBodySystem(Vec3 _position,Vec3 _size,float _mass, Quat _orientation, Vec3 _linearVelocity, Vec3 _angularVelocity);
+	 RigidBodySystem(Vec3 _position,Vec3 _size,float _mass, Quat _orientation, Vec3 _linearVelocity, Vec3 _angularVelocity, float _bounciness);
 	~RigidBodySystem();
 
 	void applyForce(Vec3 _loc, Vec3 _force);
@@ -36,7 +37,7 @@ public:
 
 	Vec3 force = Vec3(), torque = Vec3(); 
 	float mass; 
-
+	float bouncieness; 
 
 private: 
 
