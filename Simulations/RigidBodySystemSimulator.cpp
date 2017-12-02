@@ -61,6 +61,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2);
 		this->setVelocityOf(0, Vec3(0.05f, 0.05f, 0.2f));
 		this->setAngularVelocityOf(0, Vec3(1.1f, 1.2f, 1.3f));
+		this->setOrientationOf(0, Quat(0.0f, 0.0f, 0.0f, 1.1f));
 
 		break; //  single Body
 	case 2:
@@ -84,10 +85,10 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 		rigidBody.position += timeStep * rigidBody.linearVelocity;
 		rigidBody.linearVelocity += timeStep / rigidBody.mass * m_externalForce;
 		
-		//rigidBody.orientation.x += timeStep / 2 * rigidBody.angularVelocity.x * rigidBody.orientation.x;
-		//rigidBody.orientation.y += timeStep / 2 * rigidBody.angularVelocity.y * rigidBody.orientation.y;
-		//rigidBody.orientation.z += timeStep / 2 * rigidBody.angularVelocity.z * rigidBody.orientation.z;
-		//rigidBody.orientation /= rigidBody.orientation.norm();
+		rigidBody.orientation.x += timeStep / 2 * rigidBody.angularVelocity.x * rigidBody.orientation.x;
+		rigidBody.orientation.y += timeStep / 2 * rigidBody.angularVelocity.y * rigidBody.orientation.y;
+		rigidBody.orientation.z += timeStep / 2 * rigidBody.angularVelocity.z * rigidBody.orientation.z;
+		rigidBody.orientation /= rigidBody.orientation.norm();
 
 		//cout << "pos: " << rigidBody.position << endl;
 		//cout << "lvel: " << rigidBody.linearVelocity << endl;
@@ -95,7 +96,7 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 
 
 
-		
+		m_externalForce = Vec3();
 	}
 }
 
@@ -124,7 +125,7 @@ void RigidBodySystemSimulator::externalForcesCalculations(float timeElapsed)
 		Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
 		Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
 		// find a proper scale!
-		float inputScale = 0.005f;
+		float inputScale = 0.1f;
 		inputWorld = inputWorld * inputScale;
 
 		m_externalForce = inputWorld;

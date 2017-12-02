@@ -15,7 +15,7 @@ class RigidBodySystem
 
 
 public:
-	RigidBodySystem(Vec3 _position,Vec3 _size,float _mass, Quat _orientation = Quat(), Vec3 _linearVelocity = Vec3(), Vec3 _angularVelocity = Vec3());
+	 RigidBodySystem(Vec3 _position,Vec3 _size,float _mass, Quat _orientation = Quat(0.0f, 0.0f, 0.0f, 1.0f), Vec3 _linearVelocity = Vec3(), Vec3 _angularVelocity = Vec3());
 	~RigidBodySystem();
 
 	void applyForce(Vec3 loc, Vec3 force);
