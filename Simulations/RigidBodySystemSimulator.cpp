@@ -107,9 +107,9 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 		rigidBody.position += timeStep * rigidBody.linearVelocity;
 		rigidBody.linearVelocity += timeStep / rigidBody.mass * rigidBody.force;
 		
-
-		Quat tmp = Quat(0, rigidBody.angularVelocity.x * rigidBody.orientation.x, rigidBody.angularVelocity.y * rigidBody.orientation.y, rigidBody.angularVelocity.z * rigidBody.orientation.z );
-		rigidBody.orientation += timeStep / 2 * tmp;
+		//this is prob. borked
+		Quat tmp = Quat(0, rigidBody.angularVelocity.x, rigidBody.angularVelocity.y, rigidBody.angularVelocity.z);
+		rigidBody.orientation += timeStep / 2 * tmp * rigidBody.orientation;
 		rigidBody.orientation = rigidBody.orientation.unit(); 
 
 		rigidBody.angularMomentum += timeStep * rigidBody.torque; 
