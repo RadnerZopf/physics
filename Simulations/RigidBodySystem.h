@@ -46,9 +46,12 @@ public:
 	Vec3 old_angularMomentum = Vec3();
 
 
+
+
 	Vec3 force = Vec3(), torque = Vec3(); 
 	float mass; 
 	float bouncieness; 
+	bool fixed = false;
 
 private: 
 

@@ -84,6 +84,15 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 
 		break; //  two Bodies
 	case 3:
+
+		//add floor and make it fixed
+		floorId = 0;
+		addRigidBody(Vec3(0.0f, -1.0f, 0.0f), Vec3(10.0f, 1.0f, 10.0f), 2);
+		m_vRigidBodies[floorId].fixed = true;
+
+
+		addRigidBody(Vec3(-2, 0.5, 0), Vec3(1.0f, 1.0f, 1.0f), 2, rotate90YZ, Vec3(0.0, 0.0, 0.0), Vec3());
+		addRigidBody(Vec3(2, 0, 0), Vec3(1.0f, 0.6f, 0.5f), 7, Quat(0.0, 0.0, 0.0, 1.0), Vec3(-0.5, 0.0, 0.0), Vec3());
 		break; // Complex sim
 	default:break;
 	}
@@ -96,32 +105,38 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 	for (int i = 0; i <m_vRigidBodies.size(); i++)
 	{
 
+
 		RigidBodySystem &rigidBody = m_vRigidBodies[i];
 
-		//rigidBody.saveState();
+		if (!rigidBody.fixed)
+		{
+			rigidBody.saveState();
 
-		//not sure how to plare cursor meaningful in 3D; this has an "ok" effect
-		//rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
+			//not sure how to plare cursor meaningful in 3D; this has an "ok" effect
+			//rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
 
-		//euler
-		rigidBody.position += timeStep * rigidBody.linearVelocity;
-		rigidBody.linearVelocity += timeStep / rigidBody.mass * rigidBody.force;
-		
-		//this is prob. borked
-		Quat tmp = Quat(0, rigidBody.angularVelocity.x, rigidBody.angularVelocity.y, rigidBody.angularVelocity.z);
-		rigidBody.orientation += timeStep / 2 * tmp * rigidBody.orientation;
-		rigidBody.orientation = rigidBody.orientation.unit(); 
+			//euler
+			rigidBody.position += timeStep * rigidBody.linearVelocity;
+			rigidBody.linearVelocity += timeStep / rigidBody.mass * rigidBody.force;
 
-		rigidBody.angularMomentum += timeStep * rigidBody.torque; 
+			if (m_iTestCase == 3) // compex sim -> apply gravity
+				rigidBody.linearVelocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeStep;
 
-		rigidBody.angularVelocity = rigidBody.getInertiaTensor() * rigidBody.angularMomentum; 
+			//this is prob. borked
+			Quat tmp = Quat(0, rigidBody.angularVelocity.x, rigidBody.angularVelocity.y, rigidBody.angularVelocity.z);
+			rigidBody.orientation += timeStep / 2 * tmp * rigidBody.orientation;
+			rigidBody.orientation = rigidBody.orientation.unit();
 
+			rigidBody.angularMomentum += timeStep * rigidBody.torque;
 
-		//cout << "pos: " << rigidBody.position << endl;
-		//cout << "lvel: " << rigidBody.linearVelocity << endl;
-		//cout << "avel: " << rigidBody.angularVelocity << endl;
+			rigidBody.angularVelocity = rigidBody.getInertiaTensor() * rigidBody.angularMomentum;
 
 
+			//cout << "pos: " << rigidBody.position << endl;
+			//cout << "lvel: " << rigidBody.linearVelocity << endl;
+			//cout << "avel: " << rigidBody.angularVelocity << endl;
+
+		}
 	}
 	//clear ext force in case input stops (otherwise we would constantly add the last input force) 
 	m_externalForce = Vec3();
@@ -160,6 +175,8 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 				double impA = (1 + a.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
 				double impB = (1 + b.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
 
+				//if(!a.fixed) a.loadOldState();
+				//if(!b.fixed) b.loadOldState();
 
 				a.linearVelocity += (impA / a.mass) * col.normalWorld; 
 				b.linearVelocity -= (impB / b.mass) * col.normalWorld;
@@ -181,11 +198,14 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 
 void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 {
+	bool renderAll = true;
 	for (RigidBodySystem body : m_vRigidBodies)
 	{
-		
-		DUC->setUpLighting(Vec3(0, 0, 0), 0.4*Vec3(1, 1, 1), 2000.0, Vec3(0.5, 0.5, 0.5));
-		DUC->drawRigidBody(body.getWorldMat());
+		if (!body.fixed || renderAll)
+		{
+			DUC->setUpLighting(Vec3(0, 0, 0), 0.4*Vec3(1, 1, 1), 2000.0, Vec3(0.5, 0.5, 0.5));
+			DUC->drawRigidBody(body.getWorldMat());
+		}
 	}
 }
 

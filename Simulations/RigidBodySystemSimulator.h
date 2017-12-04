@@ -6,6 +6,8 @@
 
 #define TESTCASEUSEDTORUNTEST 2
 
+#define EARTH_ACCEL GamePhysics::Real(-9.81)
+
 class RigidBodySystemSimulator:public Simulator{
 public:
 	// Construtors
@@ -52,6 +54,8 @@ private:
 
 
 	vector<RigidBodySystem> m_vRigidBodies; 
+
+	int floorId;
 
 	// UI Attributes
 	Point2D m_mouse;
