@@ -56,6 +56,7 @@ private:
 	vector<RigidBodySystem> m_vRigidBodies; 
 
 	int floorId;
+	bool gravity = false;
 
 	// UI Attributes
 	Point2D m_mouse;

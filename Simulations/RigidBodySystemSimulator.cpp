@@ -91,8 +91,10 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		m_vRigidBodies[floorId].fixed = true;
 
 
-		addRigidBody(Vec3(-2, 0.5, 0), Vec3(1.0f, 1.0f, 1.0f), 2, rotate90YZ, Vec3(0.0, 0.0, 0.0), Vec3());
-		addRigidBody(Vec3(2, 0, 0), Vec3(1.0f, 0.6f, 0.5f), 7, Quat(0.0, 0.0, 0.0, 1.0), Vec3(-0.5, 0.0, 0.0), Vec3());
+		addRigidBody(Vec3(0, 1.5, 0), Vec3(1.0f, 1.0f, 1.0f), 2, -rotate90YZ, Vec3(0.0, 5.0, 0.0), Vec3());
+		addRigidBody(Vec3(0, 4, 0), Vec3(1.0f, 1.0f, 1.0f), 2, rotate90YZ, Vec3(0.0, 0.0, 0.0), Vec3());
+		addRigidBody(Vec3(0, 8, 0), Vec3(1.0f, 1.0f, 1.0f), 2, -rotate90YZ, Vec3(0.0, 0.0, 0.0), Vec3(1.0f, 1.0f, 0.0f));
+		addRigidBody(Vec3(-1, 6, 0), Vec3(1.0f, 1.0f, 1.0f), 2, rotate90YZ, Vec3(0.0, 0.0, 0.0), Vec3());
 		break; // Complex sim
 	default:break;
 	}
@@ -113,13 +115,13 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 			rigidBody.saveState();
 
 			//not sure how to plare cursor meaningful in 3D; this has an "ok" effect
-			//rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
+			rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
 
 			//euler
 			rigidBody.position += timeStep * rigidBody.linearVelocity;
 			rigidBody.linearVelocity += timeStep / rigidBody.mass * rigidBody.force;
 
-			if (m_iTestCase == 3) // compex sim -> apply gravity
+			if (m_iTestCase == 3 && gravity) // compex sim -> apply gravity
 				rigidBody.linearVelocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeStep;
 
 			//this is prob. borked
@@ -176,7 +178,7 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 				double impB = (1 + b.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
 
 				//if(!a.fixed) a.loadOldState();
-				//if(!b.fixed) b.loadOldState();
+				if(!b.fixed) b.loadOldState();
 
 				a.linearVelocity += (impA / a.mass) * col.normalWorld; 
 				b.linearVelocity -= (impB / b.mass) * col.normalWorld;
