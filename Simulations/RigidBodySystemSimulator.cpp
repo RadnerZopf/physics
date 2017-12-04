@@ -78,8 +78,8 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		break; //  single Body
 	case 2:
 
-		addRigidBody(Vec3(-2,0,0), Vec3(1.0f, 1.0f, 0.5f), 2, rotate90YZ, Vec3(2.0,0.0,0.0), Vec3());
-		addRigidBody(Vec3(2,0,0), Vec3(1.0f, 0.6f, 0.5f), 7, Quat(0.0,0.0,0.0,1.0), Vec3( -3.0, 0.0, 0.0), Vec3());
+		addRigidBody(Vec3(-2,0.5,0), Vec3(1.0f, 1.0f, 1.0f), 2, rotate90YZ, Vec3(0.0,0.0,0.0), Vec3());
+		addRigidBody(Vec3(2,0,0), Vec3(1.0f, 0.6f, 0.5f), 7, Quat(0.0,0.0,0.0,1.0), Vec3( -15.0, 0.0, 0.0), Vec3());
 
 
 		break; //  two Bodies
@@ -98,10 +98,10 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 
 		RigidBodySystem &rigidBody = m_vRigidBodies[i];
 
-		rigidBody.saveState();
+		//rigidBody.saveState();
 
 		//not sure how to plare cursor meaningful in 3D; this has an "ok" effect
-		rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
+		//rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
 
 		//euler
 		rigidBody.position += timeStep * rigidBody.linearVelocity;
@@ -120,6 +120,8 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 		//cout << "pos: " << rigidBody.position << endl;
 		//cout << "lvel: " << rigidBody.linearVelocity << endl;
 		//cout << "avel: " << rigidBody.angularVelocity << endl;
+
+
 	}
 	//clear ext force in case input stops (otherwise we would constantly add the last input force) 
 	m_externalForce = Vec3();
@@ -149,28 +151,28 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 				cout << b.linearVelocity << endl;
 				
 				cout << "Valid Collision" << endl;
-				cout << i << " : " << j << endl;
 
-				CollisionInfo colRev = checkCollisionSAT(b.getWorldMat(), a.getWorldMat()); // what was xa and ab again?
-				Vec3 somethingINeedToDot = cross(a.getInertiaTensor() * cross(col.collisionPointWorld, col.normalWorld), col.collisionPointWorld)
-					+ cross(b.getInertiaTensor() * cross(colRev.collisionPointWorld, col.normalWorld), colRev.collisionPointWorld);
+				Vec3 somethingINeedToDot = cross(a.getInertiaTensor() * cross(a.position, col.normalWorld), a.position)
+					+ cross(b.getInertiaTensor() * cross(b.position, col.normalWorld), b.position);
 				double denom = 1 / a.mass + 1 / b.mass + (somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z);
 
 				somethingINeedToDot = vrel; 
 				double impA = (1 + a.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
 				double impB = (1 + b.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
 
-				a.loadOldState();
-				b.loadOldState();
 
 				a.linearVelocity += (impA / a.mass) * col.normalWorld; 
 				b.linearVelocity -= (impB / b.mass) * col.normalWorld;
 
+				a.angularMomentum += cross(a.position, impA * col.normalWorld);
+				b.angularMomentum -= cross(b.position, impB * col.normalWorld);
+
+				//debug out
+				cout << "ImpA: " << impA << " | impB: " << impB << endl; 
+				
 				cout << a.linearVelocity << endl;
 				cout << b.linearVelocity << endl;
 
-				a.angularMomentum += cross(col.collisionPointWorld, impA * col.normalWorld);
-				b.angularMomentum -= cross(col.collisionPointWorld, impB * col.normalWorld);
 
 			}
 		}

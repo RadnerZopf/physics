@@ -37,7 +37,7 @@ Mat4 RigidBodySystem::getInertiaTensor()
 {
 	Mat4 rot = orientation.getRotMat(); 
 
-	Mat4 rotT = rot; 
+	Mat4 rotT(rot); 
 	rotT.transpose(); 
 
 
