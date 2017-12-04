@@ -91,12 +91,14 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
  
 void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 {
-
+	//cout << "new ts" << endl;
 
 	for (int i = 0; i <m_vRigidBodies.size(); i++)
 	{
 
 		RigidBodySystem &rigidBody = m_vRigidBodies[i];
+
+		rigidBody.saveState();
 
 		//not sure how to plare cursor meaningful in 3D; this has an "ok" effect
 		rigidBody.applyForce(Vec3(m_mouse.x, m_mouse.y, rigidBody.position.z), m_externalForce); 
@@ -136,15 +138,18 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 
 			if (col.isValid)
 			{
-
 				
 				Vec3 vrel = col.normalWorld * (a.linearVelocity + cross(a.angularVelocity, col.collisionPointWorld) - b.linearVelocity - cross(b.angularVelocity, col.collisionPointWorld)); 
 
 				//velocity and col- normal have opposite direction
 				if (vrel.x + vrel.y + vrel.z > 0)//collision already resolved, do noting
-					continue; 
+					continue;
+
+				cout << a.linearVelocity << endl;
+				cout << b.linearVelocity << endl;
 				
-				cout << "Valid Collision" << endl; 
+				cout << "Valid Collision" << endl;
+				cout << i << " : " << j << endl;
 
 				CollisionInfo colRev = checkCollisionSAT(b.getWorldMat(), a.getWorldMat()); // what was xa and ab again?
 				Vec3 somethingINeedToDot = cross(a.getInertiaTensor() * cross(col.collisionPointWorld, col.normalWorld), col.collisionPointWorld)
@@ -152,11 +157,17 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 				double denom = 1 / a.mass + 1 / b.mass + (somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z);
 
 				somethingINeedToDot = vrel; 
-				double impA = -(1 + a.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
-				double impB = -(1 + b.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
+				double impA = (1 + a.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
+				double impB = (1 + b.bouncieness)*(somethingINeedToDot.x * col.normalWorld.x + somethingINeedToDot.y * col.normalWorld.y + somethingINeedToDot.z * col.normalWorld.z)/denom;
+
+				a.loadOldState();
+				b.loadOldState();
 
 				a.linearVelocity += (impA / a.mass) * col.normalWorld; 
 				b.linearVelocity -= (impB / b.mass) * col.normalWorld;
+
+				cout << a.linearVelocity << endl;
+				cout << b.linearVelocity << endl;
 
 				a.angularMomentum += cross(col.collisionPointWorld, impA * col.normalWorld);
 				b.angularMomentum -= cross(col.collisionPointWorld, impB * col.normalWorld);
@@ -164,8 +175,6 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 			}
 		}
 	}
-
-
 }
 
 void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
@@ -193,7 +202,7 @@ void RigidBodySystemSimulator::externalForcesCalculations(float timeElapsed)
 		Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
 		Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
 		// find a proper scale!
-		float inputScale = 0.0001f;
+		float inputScale = 0.001f;
 		inputWorld = inputWorld * inputScale;
 
 		m_externalForce = inputWorld;

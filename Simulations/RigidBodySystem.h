@@ -21,6 +21,10 @@ public:
 
 	void applyForce(Vec3 _loc, Vec3 _force);
 
+
+	void saveState();
+	void loadOldState();
+
 	Mat4 getInertiaTensor(); 
 
 
@@ -34,6 +38,13 @@ public:
 	Vec3 angularVelocity; 
 	Vec3 angularMomentum = Vec3();
 
+	Vec3 old_position;
+	Vec3 old_size;
+	Quat old_orientation;
+	Vec3 old_linearVelocity;
+	Vec3 old_angularVelocity;
+	Vec3 old_angularMomentum = Vec3();
+
 
 	Vec3 force = Vec3(), torque = Vec3(); 
 	float mass; 
@@ -45,7 +56,7 @@ private:
 
 	GamePhysics::Mat4 worldMat; 
 	GamePhysics::Mat4 scaleMat;
-	vector<Vec3> points; 
+	vector<Vec3> points;
 
 };
 

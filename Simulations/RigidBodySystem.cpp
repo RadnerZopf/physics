@@ -61,6 +61,24 @@ void RigidBodySystem::applyForce(Vec3 _loc, Vec3 _force)
 
 }
 
+void RigidBodySystem::saveState()
+{
+	this->old_position = position;
+	//this->old_linearVelocity = linearVelocity;
+	this->old_orientation = orientation;
+	//this->old_angularMomentum = angularMomentum;
+	//this->old_angularVelocity = angularVelocity;
+}
+
+void RigidBodySystem::loadOldState()
+{
+	//this->angularMomentum = old_angularMomentum;
+	//this->angularVelocity = old_angularVelocity;
+	//this->linearVelocity = old_linearVelocity;
+	this->position = old_position;
+	this->orientation = old_orientation;
+}
+
 
 Mat4& RigidBodySystem::getWorldMat()
 {
