@@ -144,7 +144,7 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 				Vec3 vrel = col.normalWorld * (a.linearVelocity + cross(a.angularVelocity, col.collisionPointWorld) - b.linearVelocity - cross(b.angularVelocity, col.collisionPointWorld)); 
 
 				//velocity and col- normal have opposite direction
-				if (vrel.x + vrel.y + vrel.z > 0)//collision already resolved, do noting
+				if (vrel.x >0 & vrel.y >0 & vrel.z > 0)//collision already resolved, do noting
 					continue;
 
 				cout << a.linearVelocity << endl;
