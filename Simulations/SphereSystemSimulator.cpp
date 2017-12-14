@@ -8,6 +8,7 @@ std::function<float(float)> SphereSystemSimulator::m_Kernels[5] = {
 	[](float x) {return 1.0f / (x*x) - 1.0f; },   // Electric Charge, m_iKernel = 4
 };
 
+<<<<<<< HEAD
 // SphereSystemSimulator member functions
 
 SphereSystemSimulator::SphereSystemSimulator() {
@@ -349,3 +350,6 @@ void SphereSystemSimulator::onMouse(int x, int y)
 	m_trackmouse.x = x;
 	m_trackmouse.y = y;
 }
+=======
+// SphereSystemSimulator member functions
+>>>>>>> cd08e57063624ad0a5fa43cd9ec88b9f5a0c3097
