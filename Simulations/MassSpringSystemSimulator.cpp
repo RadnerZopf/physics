@@ -332,7 +332,6 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 				p.velocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeDiv2;
 
 			p.force = clearforce;
-
 		}
 
 		//recalc elastic forces w/ midpoint values
