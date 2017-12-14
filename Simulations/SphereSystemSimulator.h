@@ -8,13 +8,11 @@
 #define GRIDACC 1
 #define KDTREEACC 2
 
-#define EARTH_ACCEL GamePhysics::Real(-9.81)
-
 
 struct Box
 {
 	Vec3 pos; 
-	Vec3 posPlusoffset; 
+	Vec3 offset; 
 };
 
 class SphereSystemSimulator:public Simulator{
@@ -53,13 +51,12 @@ protected:
 	float m_fForceScaling;
 	float m_fDamping;
 	int   m_iNumSpheres;
-
+	float m_fGravity; 
+	
 	float m_fRadTimes2;
 	float m_fRadTimes2Squared; //squared dist
 
 	Box m_boxOuterBounds; 
-	Box m_boxRadiusBounds;
-
 	
 	int   m_iKernel; // index of the m_Kernels[5], more detials in SphereSystemSimulator.cpp
 	static std::function<float(float)> m_Kernels[5];

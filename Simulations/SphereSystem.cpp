@@ -11,7 +11,8 @@ SphereSystem::SphereSystem(int numSpheres, float radius, Vec3 firstPos, float x_
 
 	for (int i = 0; i < numSpheres; ++i)
 	{
-		spheres.push_back(Sphere(curPos, Vec3(0.0f, 0.0f, 0.0f)));
+		//inital vel set here for testing
+		spheres.push_back(Sphere(curPos, Vec3(1.0f, 0.0f, 2.0f)));
 
 		curPos.x += d; 
 		if (curPos.x > x_max)
