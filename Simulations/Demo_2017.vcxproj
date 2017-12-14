@@ -227,10 +227,7 @@
     <ClCompile Include="MassSpringSystemSimulator.cpp" />
     <ClCompile Include="RigidBodySystem.cpp" />
     <ClCompile Include="RigidBodySystemSimulator.cpp" />
-<<<<<<< HEAD
     <ClCompile Include="SphereSystem.cpp" />
-=======
->>>>>>> cd08e57063624ad0a5fa43cd9ec88b9f5a0c3097
     <ClCompile Include="SphereSystemSimulator.cpp" />
     <ClCompile Include="TemplateSimulator.cpp" />
     <ClCompile Include="util\FFmpeg.cpp" />
@@ -243,10 +240,7 @@
     <ClInclude Include="RigidBodySystem.h" />
     <ClInclude Include="RigidBodySystemSimulator.h" />
     <ClInclude Include="Simulator.h" />
-<<<<<<< HEAD
     <ClInclude Include="SphereSystem.h" />
-=======
->>>>>>> cd08e57063624ad0a5fa43cd9ec88b9f5a0c3097
     <ClInclude Include="SphereSystemSimulator.h" />
     <ClInclude Include="TemplateSimulator.h" />
     <ClInclude Include="util\FFmpeg.h" />
