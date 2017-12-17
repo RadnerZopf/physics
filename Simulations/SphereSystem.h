@@ -20,10 +20,20 @@ struct Sphere
 class SphereSystem
 {
 public:
-	SphereSystem(int numSpheres, float radius, Vec3 firstPos, float x_max, float z_max);
+	SphereSystem(int numSpheres, float radius, Vec3 pos, Vec3 offset, bool useGrid = false);
 	~SphereSystem();
 
+	inline void sortSpheresToGrid();
+
 	std::vector<Sphere> spheres;
+	std::vector<std::vector<Sphere>> cdGrid;
+
+private: 
+	int m_iGridSize; 
+	Real m_fDiameter; 
+	int sizeX; 
+	int sizeY;
+	int sizeZ;
 
 };
 

@@ -24,7 +24,14 @@ void SphereSystemSimulator::initUI(DrawingUtilitiesClass * DUC)
 {
 	this->DUC = DUC;
 
+
+	TwAddVarRW(DUC->g_pTweakBar, "Draw Scene", TW_TYPE_BOOLCPP, &m_bDrawScene, "");
+	TwAddVarRW(DUC->g_pTweakBar, "Grid", TW_TYPE_BOOLCPP, &m_bDrawGrid, "");
+
+
 	TwAddVarRW(DUC->g_pTweakBar, "Kernel", TwDefineEnumFromString("Kernel", "Constant, Linear, Quadratic, Weak Electric Charge, Electric Charge"), &m_iKernel, "");
+	TwAddVarRW(DUC->g_pTweakBar, "Damping", TW_TYPE_FLOAT, &m_fDamping, "min=0.00 step=0.01");
+	TwAddVarRW(DUC->g_pTweakBar, "Gravity", TW_TYPE_FLOAT, &m_fGravity, "min=0.00 step=0.01");
 
 
 	switch (m_iTestCase)
@@ -67,8 +74,9 @@ void SphereSystemSimulator::notifyCaseChanged(int testCase)
 		m_pSphereSystemGrid = nullptr;
 	}
 
+	//values from demo scene
 	m_iKernel = 1;
-	m_iNumSpheres = 5;
+	m_iNumSpheres = 100;
 	m_fRadius = 0.05;
 	m_fForceScaling = 10.0f; 
 	m_fMass = 0.1f;
@@ -76,8 +84,16 @@ void SphereSystemSimulator::notifyCaseChanged(int testCase)
 
 	m_fGravity = 0.1f;
 
-	Vec3 boxPos = Vec3(-1, -1, -1); 
-	Vec3 boxOffset = Vec3(3.0f, 2.0f, 2.0f); 
+	//Debgu values 
+	/*
+	m_fGravity = 0;
+	m_fDamping = 0;
+	*/
+
+	// center bb at -0.5, 0.5
+	// overlaps sim bb w/ center bb
+	Vec3 boxPos = Vec3(-0.5, -0.5, -0.5); 
+	Vec3 boxOffset = Vec3(1, 1, 1); 
 
 	m_boxOuterBounds = {boxPos, boxOffset};
 
@@ -86,18 +102,15 @@ void SphereSystemSimulator::notifyCaseChanged(int testCase)
 	switch (m_iTestCase)
 	{
 	case 0: // NAIVEACC
-		m_pSphereSystem = new SphereSystem(m_iNumSpheres, m_fRadius, Vec3(m_boxOuterBounds.pos.x + m_fRadius, m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y - m_fRadius, m_boxOuterBounds.pos.z + m_fRadius),
-			m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x - m_fRadius, m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z - m_fRadius);
+		m_pSphereSystem = new SphereSystem(m_iNumSpheres, m_fRadius, boxPos, boxOffset); 
 		break;
 	case 1: //  GRIDACC
-		m_pSphereSystemGrid = new SphereSystem(m_iNumSpheres, m_fRadius, Vec3(m_boxOuterBounds.pos.x + m_fRadius, m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y - m_fRadius, m_boxOuterBounds.pos.z + m_fRadius),
-			m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x - m_fRadius, m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z - m_fRadius);
+		m_pSphereSystemGrid = new SphereSystem(m_iNumSpheres, m_fRadius, boxPos, boxOffset, true);
 		break; 
 	case 2:  //  combined
-		m_pSphereSystem  = new SphereSystem(m_iNumSpheres, m_fRadius, Vec3(m_boxOuterBounds.pos.x + m_fRadius, m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y - m_fRadius, m_boxOuterBounds.pos.z + m_fRadius),
-			m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x - m_fRadius, m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z - m_fRadius);
-		m_pSphereSystemGrid = new SphereSystem(m_iNumSpheres, m_fRadius, Vec3(m_boxOuterBounds.pos.x + m_fRadius, m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y - m_fRadius, m_boxOuterBounds.pos.z + m_fRadius),
-			m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x - m_fRadius, m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z - m_fRadius);
+		m_pSphereSystem  = new SphereSystem(m_iNumSpheres, m_fRadius, boxPos, boxOffset);
+		m_pSphereSystemGrid = new SphereSystem(m_iNumSpheres, m_fRadius, boxPos, boxOffset, true);
+
 		break;
 
 	default:break;
@@ -214,43 +227,56 @@ inline void SphereSystemSimulator::detectAndResolveSphereOnBoundsCollision(Spher
 
 	if (m_boxOuterBounds.pos.x > s.pos.x - m_fRadius)
 	{
+		s.vel.x =  -m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.x - s.pos.x) / m_fRadTimes2) * m_fForceScaling //force
+			/ m_fMass //->acceleration 
+			*dt; //-->velocity
 
-		s.vel.x -=  m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.x - s.pos.x) / m_fRadTimes2) * m_fForceScaling //force
-			/ m_fMass //->acceleration 
-			*dt; //-->velocity
+		s.pos.x = m_boxOuterBounds.pos.x + m_fRadius;
+
 	}
-	else if( m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x < s.pos.x + m_fRadius)
+	else if(m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x < s.pos.x + m_fRadius)
 	{
-		s.vel.x += m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.x - s.pos.x) / m_fRadTimes2) * m_fForceScaling //force
+		s.vel.x = m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.x - s.pos.x) / m_fRadTimes2) * m_fForceScaling //force
 			/ m_fMass //->acceleration 
 			*dt; //-->velocity
+
+		s.pos.x = m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x - m_fRadius;
 	}
 
 	if (m_boxOuterBounds.pos.y > s.pos.y - m_fRadius)
 	{
-		s.vel.y -= m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.y - s.pos.y) / m_fRadTimes2) * m_fForceScaling //force
+		s.vel.y =  -m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.y - s.pos.y) / m_fRadTimes2) * m_fForceScaling //force
 			/ m_fMass //->acceleration 
 			*dt; //-->velocity
+
+		//s.vel.y += m_fGravity / m_fMass *dt; //disable gravity when on ground??
+	//	s.pos.y = m_boxOuterBounds.pos.y + m_fRadius;
+
 	}
 	else if (m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y < s.pos.y + m_fRadius)
 	{
-		s.vel.y += m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.y - s.pos.y) / m_fRadTimes2) * m_fForceScaling //force
+		s.vel.y = m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.y - s.pos.y) / m_fRadTimes2) * m_fForceScaling //force
 			/ m_fMass //->acceleration 
 			*dt; //-->velocity
+		s.pos.y = m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y - m_fRadius;
 	}
 
 
 	if (m_boxOuterBounds.pos.z > s.pos.z - m_fRadius)
 	{
-		s.vel.z -= m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.z - s.pos.z) / m_fRadTimes2) * m_fForceScaling //force
+		s.vel.z = -m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.z - s.pos.z) / m_fRadTimes2) * m_fForceScaling //force
 			/ m_fMass //->acceleration 
 			*dt; //-->velocity
+
+		s.pos.z = m_boxOuterBounds.pos.z + m_fRadius;
+
 	}
 	else if (m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z < s.pos.z + m_fRadius)
 	{
-		s.vel.z += m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.z - s.pos.z) / m_fRadTimes2) * m_fForceScaling //force
+		s.vel.z = m_Kernels[m_iKernel](abs(m_boxOuterBounds.pos.z - s.pos.z) / m_fRadTimes2) * m_fForceScaling //force
 			/ m_fMass //->acceleration 
 			*dt; //-->velocity
+		s.pos.z = m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z - m_fRadius;
 	}
 
 	//old crap, del once stuff works
@@ -324,7 +350,17 @@ inline void SphereSystemSimulator::detectAndResolveSphereOnBoundsCollision(Spher
 
 void SphereSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	bool renderAll = true;
+
+	if (!m_bDrawScene) return; 
+
+	if (m_bDrawGrid) // drawGrid 
+	{
+
+		//TODO
+
+
+
+	}
 
 	Vec3 scaleRad = Vec3(m_fRadius, m_fRadius, m_fRadius); 
 
@@ -376,6 +412,16 @@ void SphereSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 
 	DUC->beginLine();
 	DUC->drawLine(m_boxOuterBounds.pos, col, m_boxOuterBounds.pos + Z*(m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z), col);
+	DUC->endLine();
+
+
+
+	//Debug
+
+
+
+	DUC->beginLine();
+	DUC->drawLine(Vec3(-1,- 0.59899999943532711,1), col,Vec3(1, - 0.59899999943532711,-1), col);
 	DUC->endLine();
 }
 

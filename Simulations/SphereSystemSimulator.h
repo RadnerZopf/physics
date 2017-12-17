@@ -56,6 +56,10 @@ protected:
 	float m_fRadTimes2;
 	float m_fRadTimes2Squared; //squared dist
 
+	bool m_bDrawScene = true; 
+	bool m_bDrawGrid = true;
+
+
 	Box m_boxOuterBounds; 
 	
 	int   m_iKernel; // index of the m_Kernels[5], more detials in SphereSystemSimulator.cpp
