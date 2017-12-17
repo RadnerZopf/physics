@@ -1,4 +1,5 @@
 ﻿#include "SphereSystemSimulator.h"
+#include "util\timer.h"
 
 std::function<float(float)> SphereSystemSimulator::m_Kernels[5] = {
 	[](float x) {return 1.0f; },              // Constant, m_iKernel = 0
@@ -32,6 +33,9 @@ void SphereSystemSimulator::initUI(DrawingUtilitiesClass * DUC)
 	TwAddVarRW(DUC->g_pTweakBar, "Kernel", TwDefineEnumFromString("Kernel", "Constant, Linear, Quadratic, Weak Electric Charge, Electric Charge"), &m_iKernel, "");
 	TwAddVarRW(DUC->g_pTweakBar, "Damping", TW_TYPE_FLOAT, &m_fDamping, "min=0.00 step=0.01");
 	TwAddVarRW(DUC->g_pTweakBar, "Gravity", TW_TYPE_FLOAT, &m_fGravity, "min=0.00 step=0.01");
+
+	TwAddVarRW(DUC->g_pTweakBar, "Timer Steps", TW_TYPE_INT32, &m_iTimeMeasureSteps, "");
+	TwAddVarRW(DUC->g_pTweakBar, "Start Timer", TW_TYPE_BOOLCPP, &m_bMeasureTime, "");
 
 
 	switch (m_iTestCase)
@@ -129,6 +133,11 @@ void SphereSystemSimulator::externalForcesCalculations(float timeElapsed)
 
 void SphereSystemSimulator::simulateTimestep(float timeStep)
 {
+	if (m_bMeasureTime)
+	{
+		measureTime(timeStep);
+		reset(); 
+	}
 
 	switch (m_iTestCase)
 	{
@@ -346,7 +355,33 @@ inline void SphereSystemSimulator::detectAndResolveSphereOnBoundsCollision(Spher
 	*/
 }
 
+void SphereSystemSimulator::measureTime(float timeStep)
+{
+	MuTime timer;
+	m_bMeasureTime = false; // DO NOT [RE]MOVE THIS
 
+	
+
+
+	timer.get(); 
+
+	for (size_t i = 0; i < m_iTimeMeasureSteps; ++i)
+	{
+		simulateTimestep(timeStep); 
+	}
+	
+	timer = timer.update();
+
+
+	cout << "-------------------------------\n"<< 
+		"TimeMeasurement for:\t" << (m_iTestCase == 0 ? "NAIVEACC" : "GRIDACC") 
+		<< "\nNumber of steps: \t" << m_iTimeMeasureSteps 
+		<< "\nTimeStep: \t\t" << timeStep 
+		<< "\nTimePassed: \t\t" << timer.time
+		<<"\n--------------------------------"<< endl; 
+
+		
+}
 
 void SphereSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 {
@@ -355,7 +390,7 @@ void SphereSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 
 	if (m_bDrawGrid) // drawGrid 
 	{
-
+		Vec3 gridCol = (1, 1, 1); 
 		//TODO
 
 

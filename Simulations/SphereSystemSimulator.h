@@ -41,6 +41,8 @@ protected:
 	inline void detectAndResolveSphereOnBoundsCollision(SphereSystem* system, int first,  float dt);
 
 
+	inline void measureTime(float timeStep);
+
 	// Attributes
 	Vec3 externalForce;
 	Point2D m_mouse;
@@ -59,12 +61,14 @@ protected:
 	bool m_bDrawScene = true; 
 	bool m_bDrawGrid = true;
 
+	int	  m_iTimeMeasureSteps = 100;
+	bool  m_bMeasureTime = false;
 
 	Box m_boxOuterBounds; 
 	
 	int   m_iKernel; // index of the m_Kernels[5], more detials in SphereSystemSimulator.cpp
 	static std::function<float(float)> m_Kernels[5];
-	
+
 	int   m_iAccelerator; // switch between NAIVEACC and GRIDACC, (optionally, KDTREEACC, 2)
 	
 	SphereSystem * m_pSphereSystem = nullptr; // add your own sphere system member!
