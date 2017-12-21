@@ -390,8 +390,26 @@ void SphereSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 
 	if (m_bDrawGrid) // drawGrid 
 	{
-		Vec3 gridCol = (1, 1, 1); 
-		//TODO
+		Vec3 gridCol = (1, 1, 1);
+
+		for (float y = -0.5f; y <= 0.5f; y += m_fRadTimes2)
+		{
+			for (float x = -0.5f; x <= 0.5f; x += m_fRadTimes2)
+			{
+				DUC->beginLine();
+				DUC->drawLine(Vec3(x, y, -0.5f), gridCol, Vec3(x, y, 0.5f), gridCol);
+				DUC->endLine();
+
+				DUC->beginLine();
+				DUC->drawLine(Vec3(-0.5f, x, y), gridCol, Vec3(0.5f, x, y), gridCol);
+				DUC->endLine();
+
+				DUC->beginLine();
+				DUC->drawLine(Vec3(y, -0.5f, x), gridCol, Vec3(y, 0.5f, x), gridCol);
+				DUC->endLine();
+			}
+		}
+		
 
 
 
