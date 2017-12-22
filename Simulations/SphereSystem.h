@@ -15,7 +15,9 @@ struct Sphere
 	Vec3 vel; 
 	Vec3 force = Vec3(); 
 
-	Vec3 midpointPos, midpointVel; 
+	Vec3 midpointPos, midpointVel;
+
+	bool col = false;
 
 } ;
 

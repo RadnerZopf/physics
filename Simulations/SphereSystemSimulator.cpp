@@ -205,9 +205,15 @@ inline void SphereSystemSimulator::simNaiveAcc(float dt)
 
 inline void SphereSystemSimulator::simGridAcc(float dt)
 {
+	SphereSystem *ss = m_pSphereSystemGrid;
+	for (int i = 0; i < m_iNumSpheres; i++)
+	{
+		Sphere s = ss->spheres[i].col = false;
+
+	}
 	float dtDiv2 = dt / 2;
 
-	SphereSystem *ss = m_pSphereSystemGrid;
+	
 
 	m_pSphereSystemGrid->sortSpheresToGrid(m_iNumSpheres);
 
@@ -223,7 +229,9 @@ inline void SphereSystemSimulator::simGridAcc(float dt)
 			{
 				for (int c = 0; c < adj.size(); c++)
 				{
-					if(ss->cdGrid[x][b] != adj[c]) detectAndResolveSphereOnSphereCollision(ss, ss->cdGrid[x][b], adj[c], dt);
+					if((ss->cdGrid[x][b] != adj[c]) && !ss->spheres[ss->cdGrid[x][b]].col) detectAndResolveSphereOnSphereCollision(ss, ss->cdGrid[x][b], adj[c], dt);
+					//ss->spheres[ss->cdGrid[x][b]].col = true;
+					//ss->spheres[adj[c]].col = true;
 					//cout << ss->cdGrid[x][b] << ":" << adj[c] << endl;
 				}
 			}

@@ -1,0 +1,7 @@
+n		NAIVEACC	GRIDACC
+
+100		500			800
+
+1000	47000		6900
+
+my laptop could not handle the n=10000 simulation
