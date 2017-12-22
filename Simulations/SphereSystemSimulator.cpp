@@ -336,7 +336,7 @@ inline void SphereSystemSimulator::detectAndResolveSphereOnBoundsCollision(Spher
 			*dt; //-->velocity
 
 		//s.vel.y += m_fGravity / m_fMass *dt; //disable gravity when on ground??
-	//	s.pos.y = m_boxOuterBounds.pos.y + m_fRadius;
+		s.pos.y = m_boxOuterBounds.pos.y + m_fRadius;
 
 	}
 	else if (m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y < s.pos.y + m_fRadius)
@@ -365,71 +365,6 @@ inline void SphereSystemSimulator::detectAndResolveSphereOnBoundsCollision(Spher
 		s.pos.z = m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z - m_fRadius;
 	}
 
-	//old crap, del once stuff works
-	/*
-	//check x
-	float dist = abs(m_boxOuterBounds.pos.x - s.pos.x);
-	if (dist < m_fRadius)
-	{
-		Vec3 response = Vec3(1,0,0)//collision normal
-			*m_Kernels[m_iKernel](-dist / m_fRadTimes2) * m_fForceScaling //force
-			/ m_fMass //->acceleration 
-			*dt; //-->velocity
-		s.vel += response; 
-	}
-
-	dist = abs(m_boxOuterBounds.pos.x + m_boxOuterBounds.offset.x - s.pos.x);
-	if (dist < m_fRadius)
-	{
-		Vec3 response = Vec3(-1, 0, 0)//collision normal
-			*m_Kernels[m_iKernel](-dist / m_fRadTimes2) * m_fForceScaling //force
-			/ m_fMass //->acceleration 
-			*dt; //-->velocity
-		s.vel += response;
-	}
-
-	//check y
-	dist = abs(m_boxOuterBounds.pos.y - s.pos.y);
-	if (dist < m_fRadius)
-	{
-		Vec3 response = Vec3(0, -1, 0)//collision normal
-			*m_Kernels[m_iKernel](-dist / m_fRadTimes2) * m_fForceScaling //force
-			/ m_fMass //->acceleration 
-			*dt; //-->velocity
-		s.vel += response;
-	}
-
-	dist = abs(m_boxOuterBounds.pos.y + m_boxOuterBounds.offset.y - s.pos.y);
-	if (dist < m_fRadius)
-	{
-		Vec3 response = Vec3(0, 1, 0)//collision normal
-			*m_Kernels[m_iKernel](-dist / m_fRadTimes2) * m_fForceScaling //force
-			/ m_fMass //->acceleration 
-			*dt; //-->velocity
-		s.vel += response;
-	}
-	//check z
-
-	dist = abs(m_boxOuterBounds.pos.z - s.pos.z);
-	if (dist < m_fRadius)
-	{
-		Vec3 response = Vec3(0,0,1)//collision normal
-			*m_Kernels[m_iKernel](-dist / m_fRadTimes2) * m_fForceScaling //force
-			/ m_fMass //->acceleration 
-			*dt; //-->velocity
-		s.vel += response;
-	}
-
-	dist = abs(m_boxOuterBounds.pos.z + m_boxOuterBounds.offset.z - s.pos.z);
-	if (dist < m_fRadius)
-	{
-		Vec3 response = Vec3(0,0,-1)//collision normal
-			*m_Kernels[m_iKernel](-dist / m_fRadTimes2) * m_fForceScaling //force
-			/ m_fMass //->acceleration 
-			*dt; //-->velocity
-		s.vel += response;
-	}
-	*/
 }
 
 void SphereSystemSimulator::measureTime(float timeStep)
