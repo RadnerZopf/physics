@@ -25,17 +25,17 @@ public:
 	SphereSystem(int numSpheres, float radius, Vec3 pos, Vec3 offset, bool useGrid = false);
 	~SphereSystem();
 
-	void sortSpheresToGrid();
-
-	std::vector<Sphere> spheres;
-	std::vector<std::vector<Sphere>> cdGrid;
-
-private: 
+	void sortSpheresToGrid(int num);
 	int m_iGridSize; 
-	Real m_fDiameter; 
+	std::vector<Sphere> spheres;
+	std::vector<std::vector<int>> cdGrid;
 	int sizeX; 
 	int sizeY;
 	int sizeZ;
+private: 
+	
+	Real m_fDiameter; 
+
 
 };
 

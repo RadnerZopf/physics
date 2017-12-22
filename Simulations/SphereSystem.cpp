@@ -40,6 +40,8 @@ SphereSystem::SphereSystem(int numSpheres, float radius, Vec3 pos, Vec3 offset, 
 
 		m_iGridSize = sizeX * sizeY * sizeZ;
 		cdGrid.reserve(m_iGridSize);
+
+		for (int i = 0; i < 1000; i++) cdGrid.push_back(*new std::vector<int>());
 	}
 
 }
@@ -49,30 +51,21 @@ SphereSystem::~SphereSystem()
 {
 }
 
-void SphereSystem::sortSpheresToGrid()
+void SphereSystem::sortSpheresToGrid(int num)
 {
-	cdGrid.clear(); 
-	cdGrid.reserve(m_iGridSize);
-
-	for (int i = 0; i < 1000; i++) cdGrid.push_back(*new std::vector<Sphere>());
-
+	for (int i = 0; i < 1000; i++) cdGrid[i].clear();
+	
 
 	int posX = 0, posY = 0, posZ = 0; 
-
-	for (Sphere& s : spheres)
+	
+	for (int i = 0; i < num; i++)
 	{
-		int tmpX = (int)(s.pos.x / m_fDiameter);
-		if (tmpX == 0) if (s.pos.x < 0) tmpX = -1;
-		tmpX += 4;
+		Sphere s = spheres[i];
 
-		int tmpY = (int)(s.pos.y / m_fDiameter);
-		if (tmpY == 0) if (s.pos.y < 0) tmpY = -1;
-		tmpY += 4;
+		posX = (int)((s.pos.x + 0.5f) / m_fDiameter);
+		posY = (int)((s.pos.y + 0.5f) / m_fDiameter);
+		posZ = (int)((s.pos.z + 0.5f) / m_fDiameter);
 
-		int tmpZ = (int)(s.pos.z / m_fDiameter);
-		if (tmpZ == 0) if (s.pos.z < 0) tmpZ = -1;
-		tmpZ += 4;
-
-		std::vector<Sphere> tmp = cdGrid[tmpX * sizeX * sizeY + tmpY * sizeY + tmpZ];
+		if(posX * sizeX * sizeY + posY * sizeY + posZ >= 0) cdGrid[posX * sizeX * sizeY + posY * sizeY + posZ].push_back(i);
 	}
 }

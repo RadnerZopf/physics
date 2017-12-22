@@ -207,20 +207,30 @@ inline void SphereSystemSimulator::simGridAcc(float dt)
 {
 	float dtDiv2 = dt / 2;
 
+	SphereSystem *ss = m_pSphereSystemGrid;
 
-	for (int i = 0; i < m_iNumSpheres; ++i)
+	m_pSphereSystemGrid->sortSpheresToGrid(m_iNumSpheres);
+
+	for (int x = 0; x < ss->m_iGridSize; x++)
 	{
-		//cout << m_pSphereSystem->spheres[i].pos << endl;
-
-		detectAndResolveSphereOnBoundsCollision(m_pSphereSystemGrid, i, dtDiv2);
-
-		m_pSphereSystemGrid->sortSpheresToGrid();
-
-		for (int j = i + 1; j < m_iNumSpheres; ++j)
+		if (ss->cdGrid[x].size() > 0)
 		{
-			detectAndResolveSphereOnSphereCollision(m_pSphereSystemGrid, i, j, dtDiv2);
+			//test for collisions in 1 grid
+
+			vector<int> adj = prepareAdjacentSphereVector(x);
+
+			for (int b = 0; b < ss->cdGrid[x].size(); b++)
+			{
+				for (int c = 0; c < adj.size(); c++)
+				{
+					if(ss->cdGrid[x][b] != adj[c]) detectAndResolveSphereOnSphereCollision(ss, ss->cdGrid[x][b], adj[c], dt);
+					//cout << ss->cdGrid[x][b] << ":" << adj[c] << endl;
+				}
+			}
 		}
 	}
+
+	for (int i = 0; i < m_iNumSpheres; ++i) detectAndResolveSphereOnBoundsCollision(m_pSphereSystemGrid, i, dtDiv2);
 
 	//midpoint Integration copied from mas spring sim 
 	for (int i = 0; i < m_iNumSpheres; ++i)
@@ -236,20 +246,12 @@ inline void SphereSystemSimulator::simGridAcc(float dt)
 
 	}
 
-	for (int i = 0; i < m_iNumSpheres; ++i)
-	{
-		detectAndResolveSphereOnBoundsCollision(m_pSphereSystemGrid, i, dtDiv2);
-		for (int j = i + 1; j < m_iNumSpheres; ++j)
-		{
-			detectAndResolveSphereOnSphereCollision(m_pSphereSystemGrid, i, j, dtDiv2);
-		}
-	}
-
 	for (Sphere& s : m_pSphereSystemGrid->spheres)
 	{
 		s.pos = s.midpointPos + dt * s.vel;
 		s.vel = s.midpointVel + (Vec3(0, -m_fGravity, 0) - s.vel * m_fDamping)*(dt / m_fMass);
 	}
+
 }
 inline void SphereSystemSimulator::simKDTreeAcc(float dt)
 {
@@ -273,6 +275,28 @@ inline void SphereSystemSimulator::detectAndResolveSphereOnSphereCollision(Spher
 		system->spheres[second].vel -= response; 
 	}
 
+}
+
+vector<int> SphereSystemSimulator::prepareAdjacentSphereVector(int gridID)
+{
+	vector<int> aS; //list of all adjacent spheres of gridID
+	SphereSystem *ss = m_pSphereSystemGrid;
+
+	aS.insert(aS.end(), ss->cdGrid[gridID].begin(), ss->cdGrid[gridID].end());
+	
+	if(gridID-1 >=0) aS.insert(aS.end(), ss->cdGrid[gridID - 1].begin(), ss->cdGrid[gridID - 1].end());
+	if (gridID + 1 < 1000)aS.insert(aS.end(), ss->cdGrid[gridID + 1].begin(), ss->cdGrid[gridID + 1].end());
+
+	if (gridID - ss->sizeX >= 0)aS.insert(aS.end(), ss->cdGrid[gridID - ss->sizeX].begin(), ss->cdGrid[gridID - ss->sizeX].end());
+	if (gridID + ss->sizeX < 1000)aS.insert(aS.end(), ss->cdGrid[gridID + ss->sizeX].begin(), ss->cdGrid[gridID + ss->sizeX].end());
+
+	//aS.insert(aS.end(), ss->cdGrid[gridID - ss->sizeX - 1].begin(), ss->cdGrid[gridID - ss->sizeX - 1].end());
+	//aS.insert(aS.end(), ss->cdGrid[gridID + ss->sizeX + 1].begin(), ss->cdGrid[gridID + ss->sizeX + 1].end());
+
+	if (gridID - ss->sizeX * ss->sizeY >= 0)aS.insert(aS.end(), ss->cdGrid[gridID - ss->sizeX * ss->sizeY].begin(), ss->cdGrid[gridID - ss->sizeX * ss->sizeY].end());
+	if (gridID + ss->sizeX * ss->sizeY < 1000)aS.insert(aS.end(), ss->cdGrid[gridID + ss->sizeX * ss->sizeY].begin(), ss->cdGrid[gridID + ss->sizeX * ss->sizeY].end());
+
+	return aS;
 }
 
 inline void SphereSystemSimulator::detectAndResolveSphereOnBoundsCollision(SphereSystem* system, int first, float dt)

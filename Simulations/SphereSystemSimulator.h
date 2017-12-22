@@ -38,7 +38,9 @@ protected:
 	inline void simKDTreeAcc(float dt);
 
 
-	inline void detectAndResolveSphereOnSphereCollision(SphereSystem* system, int first, int second, float dt); 
+	inline void detectAndResolveSphereOnSphereCollision(SphereSystem* system, int first, int second, float dt);
+	vector<int> prepareAdjacentSphereVector(int gridID);
+
 	inline void detectAndResolveSphereOnBoundsCollision(SphereSystem* system, int first,  float dt);
 
 
