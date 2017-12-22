@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <math.h>
+#include <stdio.h>
 #include "util\vectorbase.h"
 
 using namespace GamePhysics; 
@@ -23,7 +25,7 @@ public:
 	SphereSystem(int numSpheres, float radius, Vec3 pos, Vec3 offset, bool useGrid = false);
 	~SphereSystem();
 
-	inline void sortSpheresToGrid();
+	void sortSpheresToGrid();
 
 	std::vector<Sphere> spheres;
 	std::vector<std::vector<Sphere>> cdGrid;

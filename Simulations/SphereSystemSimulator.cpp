@@ -205,12 +205,57 @@ inline void SphereSystemSimulator::simNaiveAcc(float dt)
 
 inline void SphereSystemSimulator::simGridAcc(float dt)
 {
+	float dtDiv2 = dt / 2;
 
+
+	for (int i = 0; i < m_iNumSpheres; ++i)
+	{
+		//cout << m_pSphereSystem->spheres[i].pos << endl;
+
+		detectAndResolveSphereOnBoundsCollision(m_pSphereSystemGrid, i, dtDiv2);
+
+		m_pSphereSystemGrid->sortSpheresToGrid();
+
+		for (int j = i + 1; j < m_iNumSpheres; ++j)
+		{
+			detectAndResolveSphereOnSphereCollision(m_pSphereSystemGrid, i, j, dtDiv2);
+		}
+	}
+
+	//midpoint Integration copied from mas spring sim 
+	for (int i = 0; i < m_iNumSpheres; ++i)
+	{
+		Sphere& s = m_pSphereSystemGrid->spheres[i];
+		s.midpointPos = s.pos;
+		s.midpointVel = s.vel;
+
+
+		s.pos += dtDiv2 * s.vel;
+		s.vel += (Vec3(0, -m_fGravity, 0) - s.vel * m_fDamping)*(dtDiv2 / m_fMass);
+
+
+	}
+
+	for (int i = 0; i < m_iNumSpheres; ++i)
+	{
+		detectAndResolveSphereOnBoundsCollision(m_pSphereSystemGrid, i, dtDiv2);
+		for (int j = i + 1; j < m_iNumSpheres; ++j)
+		{
+			detectAndResolveSphereOnSphereCollision(m_pSphereSystemGrid, i, j, dtDiv2);
+		}
+	}
+
+	for (Sphere& s : m_pSphereSystemGrid->spheres)
+	{
+		s.pos = s.midpointPos + dt * s.vel;
+		s.vel = s.midpointVel + (Vec3(0, -m_fGravity, 0) - s.vel * m_fDamping)*(dt / m_fMass);
+	}
 }
 inline void SphereSystemSimulator::simKDTreeAcc(float dt)
 {
 	//Optional
 }
+
 
 inline void SphereSystemSimulator::detectAndResolveSphereOnSphereCollision(SphereSystem* system, int first, int second, float dt)
 {

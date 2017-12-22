@@ -49,16 +49,30 @@ SphereSystem::~SphereSystem()
 {
 }
 
-inline void SphereSystem::sortSpheresToGrid()
+void SphereSystem::sortSpheresToGrid()
 {
 	cdGrid.clear(); 
 	cdGrid.reserve(m_iGridSize);
+
+	for (int i = 0; i < 1000; i++) cdGrid.push_back(*new std::vector<Sphere>());
 
 
 	int posX = 0, posY = 0, posZ = 0; 
 
 	for (Sphere& s : spheres)
 	{
-		cdGrid[((int)s.pos.x / m_fDiameter) * sizeX * sizeY + ((int)s.pos.y / m_fDiameter) * sizeY + ((int)s.pos.z / m_fDiameter)].push_back(s);
+		int tmpX = (int)(s.pos.x / m_fDiameter);
+		if (tmpX == 0) if (s.pos.x < 0) tmpX = -1;
+		tmpX += 4;
+
+		int tmpY = (int)(s.pos.y / m_fDiameter);
+		if (tmpY == 0) if (s.pos.y < 0) tmpY = -1;
+		tmpY += 4;
+
+		int tmpZ = (int)(s.pos.z / m_fDiameter);
+		if (tmpZ == 0) if (s.pos.z < 0) tmpZ = -1;
+		tmpZ += 4;
+
+		std::vector<Sphere> tmp = cdGrid[tmpX * sizeX * sizeY + tmpY * sizeY + tmpZ];
 	}
 }

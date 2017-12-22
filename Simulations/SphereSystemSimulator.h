@@ -37,6 +37,7 @@ protected:
 	inline void simGridAcc(float dt);
 	inline void simKDTreeAcc(float dt);
 
+
 	inline void detectAndResolveSphereOnSphereCollision(SphereSystem* system, int first, int second, float dt); 
 	inline void detectAndResolveSphereOnBoundsCollision(SphereSystem* system, int first,  float dt);
 
@@ -64,7 +65,8 @@ protected:
 	int	  m_iTimeMeasureSteps = 100;
 	bool  m_bMeasureTime = false;
 
-	Box m_boxOuterBounds; 
+	Box m_boxOuterBounds;
+
 	
 	int   m_iKernel; // index of the m_Kernels[5], more detials in SphereSystemSimulator.cpp
 	static std::function<float(float)> m_Kernels[5];
