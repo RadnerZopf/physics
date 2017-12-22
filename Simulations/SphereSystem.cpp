@@ -67,5 +67,6 @@ void SphereSystem::sortSpheresToGrid(int num)
 		posZ = (int)((s.pos.z + 0.5f) / m_fDiameter);
 
 		if(posX * sizeX * sizeY + posY * sizeY + posZ >= 0) cdGrid[posX * sizeX * sizeY + posY * sizeY + posZ].push_back(i);
+		else std::cout << "Dropped" << std::endl; 
 	}
 }

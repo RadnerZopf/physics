@@ -3,6 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <stdio.h>
+#include <iostream>
 #include "util\vectorbase.h"
 
 using namespace GamePhysics; 

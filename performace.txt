@@ -5,3 +5,12 @@ n		NAIVEACC	GRIDACC
 1000	47000		6900
 
 my laptop could not handle the n=10000 simulation
+
+Ran the sim in Release Config on i7-5700HQ 8x2.7GHz: 
+(times in ms)
+
+n		NAIVEACC	GRIDACC
+
+100		5			5
+
+1000	47000		6900
