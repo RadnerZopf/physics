@@ -1,5 +1,9 @@
 #pragma once
 #include "Simulator.h"
+#include "MassSpringSystemSimulator.h"
+#include "RigidBodySystemSimulator.h"
+#include "SphereSystemSimulator.h"
+
 class FinalSimulator :
 	public Simulator
 {
@@ -17,12 +21,18 @@ public:
 	void onClick(int x, int y);
 	void onMouse(int x, int y);
 
+	void interactWithSystem(int type, Simulator* other) {} //called only for subsystems
 
 	float m_fGravity; 
 	float m_fDamping; 
 	Vec3 externalForce;
 
 private:
+	//
+	MassSpringSystemSimulator* bouncyNet; 
+	RigidBodySystemSimulator* objectThrown; 
+	SphereSystemSimulator* landingPool; 
+
 	Point2D m_mouse;
 	Point2D m_trackmouse;
 	Point2D m_oldtrackmouse;

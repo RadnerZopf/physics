@@ -70,6 +70,13 @@ public:
 	*/
 	virtual void onMouse(int x, int y) = 0;
 
+
+	//creates interaction with other systems
+
+	virtual void interactWithSystem(int type, Simulator* other) = 0; 
+
+	float collisionRadius = D3D11_FLOAT32_MAX;  // collision with other systems
+
 };
 
 #endif

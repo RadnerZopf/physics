@@ -8,6 +8,9 @@
 #define MIDPOINT 2
 // Do Not Change
 
+
+#define MASS_SPRINT_TYPE_SHEET
+
 #define EARTH_ACCEL GamePhysics::Real(-9.81)
 #define FLOOR_Y -0.5f
 

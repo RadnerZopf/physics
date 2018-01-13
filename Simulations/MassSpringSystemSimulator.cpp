@@ -43,9 +43,9 @@ void MassSpringSystemSimulator::reset()
 
 }
 
-void MassSpringSystemSimulator::notifyCaseChanged(int testCase)
+void MassSpringSystemSimulator::notifyCaseChanged(int type)
 {
-	m_iTestCase = testCase;
+	m_iTestCase = type;
 	m_fFixedTimestep = -1;
 
 	m_externalForce = Vec3(); 
