@@ -35,6 +35,8 @@ public:
 	void setVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].linearVelocity = velocity; }
 	void setAngularVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].angularVelocity = velocity; }
 
+	void interactWithSystem(int type, Simulator* other);
+
 private:
 
 	//much lazy

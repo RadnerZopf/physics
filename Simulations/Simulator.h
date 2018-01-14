@@ -9,6 +9,10 @@
 #include "util/vectorbase.h"
 #include "DrawingUtilitiesClass.h"
 
+#define TYPE_MASS_SPRING 0
+#define TYPE_RIGIDBODY 1
+#define TYPE_SPH 2
+
 struct Point2D {
 	int x,y;
 };
@@ -76,6 +80,7 @@ public:
 	virtual void interactWithSystem(int type, Simulator* other) = 0; 
 
 	float collisionRadius = D3D11_FLOAT32_MAX;  // collision with other systems
+	Vec3 center; 
 
 };
 

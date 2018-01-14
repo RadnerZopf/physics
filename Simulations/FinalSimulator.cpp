@@ -7,11 +7,6 @@ FinalSimulator::FinalSimulator()
 }
 
 
-FinalSimulator::~FinalSimulator()
-{
-}
-
-
 const char * FinalSimulator::getTestCasesStr()
 {
 	return "Demo 1";
@@ -50,32 +45,121 @@ void FinalSimulator::initUI(DrawingUtilitiesClass * DUC)
 
 void FinalSimulator::notifyCaseChanged(int testCase)
 {
+	// setup test scene
 	m_iTestCase = testCase;
 
 
 
 	m_fGravity = 0;
-	m_fDamping = 0;
+	m_fDamping = 0.1;
+/*
+#define SIM_BOUNCYNET 0
+#define SIM_cube 1
+#define SIM_POOL 2
+*/
+	MassSpringSystemSimulator* bouncyNet = new MassSpringSystemSimulator(); 
+	simulators.push_back(bouncyNet); 
+	//needs to be centered on a point w/ x=z cuz MP.complex sim is setup poorly-> so i guess this is going center scene
+	bouncyNet->center = Vec3(0, 1, 0); 
+	bouncyNet->DUC = DUC; 
+	bouncyNet->m_iTestCase = 3; // clothy net thing
+	bouncyNet->setDampingFactor(m_fDamping); 
+	
+
+
+	bouncyNet->notifyCaseChanged(3); 
+
+	RigidBodySystemSimulator* cube = new RigidBodySystemSimulator(); 
+	simulators.push_back(cube);
+	cube->center = Vec3(0, 3, -2); 
+	cube->DUC = DUC;
+	cube->m_iTestCase = 1; // cube that will be thrown
+
+
+
+	cube->notifyCaseChanged(1);
+
+
+
+	SphereSystemSimulator* pool = new SphereSystemSimulator(); 
+	simulators.push_back(pool);
+
+	pool->center = Vec3(0, 0.5, 2);
+	pool->DUC = DUC;
+
+	pool->m_iTestCase = 1; // cube that will be thrown
+
+
+	pool->notifyCaseChanged(1);
+
+
 	
 
 
 
+}
 
-	switch (m_iTestCase)
+void FinalSimulator::simulateTimestep(float timeStep)
+{
+	//TODO
+	//input --> push cube 
+
+	RigidBodySystemSimulator * cubesim = dynamic_cast<RigidBodySystemSimulator*>(simulators[SIM_CUBE]);
+
+	//detect collision between systems
+
+	for (int i = 0; i < simulators.size(); ++i)
 	{
-	case 0: // 
-		break;
-	case 1: //  
-		break;
-	case 2:  //  
-
-		break;
-
-	default:break;
+		for (int j = i; j < simulators.size(); ++j)
+		{
+			Simulator *a = simulators[i];
+			Simulator *b = simulators[j];
+			if ((a->center - b->center) * (a->center - b->center) < a->collisionRadius + b->collisionRadius)
+			{
+				a->interactWithSystem(simType(b), b);
+				b->interactWithSystem(simType(a), a);
+			}
+		}
 	}
 
+	//update systems
+
+	for (Simulator* sim : simulators)
+	{
+		sim->simulateTimestep(timeStep);
+	}
 
 }
+
+void FinalSimulator::externalForcesCalculations(float timeElapsed)
+{
+	//calculate and apply mouse force to all m_vPoints
+	Point2D mouseDiff;
+	mouseDiff.x = m_trackmouse.x - m_oldtrackmouse.x;
+	mouseDiff.y = m_trackmouse.y - m_oldtrackmouse.y;
+
+	if (mouseDiff.x != 0 || mouseDiff.y != 0)
+	{
+		Mat4 worldViewInv = Mat4(DUC->g_camera.GetWorldMatrix() * DUC->g_camera.GetViewMatrix());
+		worldViewInv = worldViewInv.inverse();
+		Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
+		Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
+		// find a proper scale!
+		float inputScale = 0.005f;
+		m_inputForce = inputWorld * inputScale;
+	}
+}
+
+void FinalSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
+{
+	for (Simulator* sim : simulators)
+	{
+		sim->drawFrame(pd3dImmediateContext); 
+	}
+
+}
+
+
 void FinalSimulator::reset()
 {
 	m_mouse.x = m_mouse.y = 0;
@@ -98,4 +182,21 @@ void FinalSimulator::onMouse(int x, int y)
 	m_oldtrackmouse.y = y;
 	m_trackmouse.x = x;
 	m_trackmouse.y = y;
+}
+
+
+int FinalSimulator::simType(Simulator* sim)
+{
+	if (dynamic_cast<MassSpringSystemSimulator*>(sim))
+	{
+		return TYPE_MASS_SPRING; 
+	}
+	if (dynamic_cast<RigidBodySystemSimulator*>(sim))
+	{
+		return TYPE_RIGIDBODY;
+	}
+	if (dynamic_cast<SphereSystemSimulator*>(sim))
+	{
+		return TYPE_SPH;
+	}
 }

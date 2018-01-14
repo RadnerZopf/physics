@@ -4,12 +4,17 @@
 #include "RigidBodySystemSimulator.h"
 #include "SphereSystemSimulator.h"
 
+#define SIM_BOUNCYNET 0
+#define SIM_CUBE 1
+#define SIM_POOL 2
+
+
+
 class FinalSimulator :
 	public Simulator
 {
 public:
 	FinalSimulator();
-	~FinalSimulator();
 
 	const char * getTestCasesStr();
 	void initUI(DrawingUtilitiesClass * DUC);
@@ -28,11 +33,12 @@ public:
 	Vec3 externalForce;
 
 private:
-	//
-	MassSpringSystemSimulator* bouncyNet; 
-	RigidBodySystemSimulator* objectThrown; 
-	SphereSystemSimulator* landingPool; 
 
+	int simType(Simulator* sim); 
+
+	vector<Simulator*> simulators; 
+
+	Vec3 m_inputForce = Vec3(); 
 	Point2D m_mouse;
 	Point2D m_trackmouse;
 	Point2D m_oldtrackmouse;

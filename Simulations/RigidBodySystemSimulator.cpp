@@ -70,10 +70,8 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		cout << "Position:\t" << m_vRigidBodies[0].position << "\nLinear Vel:\t " << m_vRigidBodies[0].linearVelocity << "\n Angular vel: \t" << m_vRigidBodies[0].angularVelocity << endl; 
 
 		break;
-	case 1:
-		addRigidBody(Vec3(), Vec3(1.0f, 0.6f, 0.5f), 2, rotate90Z, Vec3(), Vec3());
-		applyForceOnBody(0, Vec3(0.3, 0.5, 0.25), Vec3(1.0, 1.0, 0.0));
-
+	case 1: // use this for final sim!!!
+		addRigidBody(center, Vec3(1, 1, 1), 2, rotate90Z, Vec3(), Vec3(), 0.25);
 
 		break; //  single Body
 	case 2:
@@ -196,6 +194,34 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 			}
 		}
 	}
+}
+
+
+void RigidBodySystemSimulator::interactWithSystem(int type, Simulator* other)
+{
+	switch (type)
+	{
+
+	case TYPE_MASS_SPRING:
+	{
+
+		break; 
+	}
+
+	case TYPE_RIGIDBODY: 
+	{
+
+		break; 
+	}
+
+	case TYPE_SPH:
+	{
+
+		break; 
+	}
+	}
+
+
 }
 
 void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)

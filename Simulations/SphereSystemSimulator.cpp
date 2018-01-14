@@ -81,7 +81,7 @@ void SphereSystemSimulator::notifyCaseChanged(int testCase)
 	//values from demo scene
 	m_iKernel = 1;
 	m_iNumSpheres = 100;
-	m_fRadius = 0.05;
+	m_fRadius = 0.05f;
 	m_fForceScaling = 10.0f; 
 	m_fMass = 0.1f;
 	m_fDamping = 0.7f; 
@@ -96,11 +96,20 @@ void SphereSystemSimulator::notifyCaseChanged(int testCase)
 
 	// center bb at -0.5, 0.5
 	// overlaps sim bb w/ center bb
-	Vec3 boxPos = Vec3(-0.5, -0.5, -0.5); 
-	Vec3 boxOffset = Vec3(1, 1, 1); 
+
+
+	// FINAL SIM SETUP
+	Vec3 boxOffset = Vec3(1, 1, 1);
+
+	Vec3 boxPos = center - 1/2*boxOffset; 
+
+	collisionRadius = 1.0f / 2.0f * boxOffset.max(); 
+
+	m_iNumSpheres = 300; 
+
+	//------------------
 
 	m_boxOuterBounds = {boxPos, boxOffset};
-
 
 
 	switch (m_iTestCase)
@@ -108,7 +117,7 @@ void SphereSystemSimulator::notifyCaseChanged(int testCase)
 	case 0: // NAIVEACC
 		m_pSphereSystem = new SphereSystem(m_iNumSpheres, m_fRadius, boxPos, boxOffset); 
 		break;
-	case 1: //  GRIDACC
+	case 1: //  GRIDACC --------------USE THIS CASE FOR FINAL SIM
 		m_pSphereSystemGrid = new SphereSystem(m_iNumSpheres, m_fRadius, boxPos, boxOffset, true);
 		break; 
 	case 2:  //  combined
@@ -130,6 +139,33 @@ void SphereSystemSimulator::externalForcesCalculations(float timeElapsed)
 	//dont think we have ext forces
 }
 
+void SphereSystemSimulator::interactWithSystem(int type, Simulator* other)
+{
+	switch (type)
+	{
+
+	case TYPE_MASS_SPRING:
+	{
+
+		break;
+	}
+
+	case TYPE_RIGIDBODY:
+	{
+
+		break;
+	}
+
+	case TYPE_SPH:
+	{
+
+		break;
+	}
+	}
+
+
+}
+
 
 void SphereSystemSimulator::simulateTimestep(float timeStep)
 {
@@ -144,7 +180,7 @@ void SphereSystemSimulator::simulateTimestep(float timeStep)
 	case 0: // NAIVEACC
 		simNaiveAcc(timeStep);
 		break;
-	case 1: //  GRIDACC
+	case 1: //  GRIDACC --------------USE THIS CASE FOR FINAL SIM
 		simGridAcc(timeStep); 
 		break;
 	case 2:  //  combined

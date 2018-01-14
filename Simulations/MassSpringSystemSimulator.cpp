@@ -129,7 +129,12 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 		float diagLength = sqrt(2 * springLength* springLength);
 		float stiffness = 50;
 
+		//adaptations for final project
+		collisionRadius = springLength * pointcount; 
+		startpos = center.x - collisionRadius / 2.0f; 
+		startY = center.y;
 
+		//-------
 
 		GameObject weirdClothyThingamabob;
 		weirdClothyThingamabob.id = 1;
@@ -190,21 +195,6 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 		m_vPoints[pointOffset + pointcount - 1].fixed = true;
 		m_vPoints[pointOffset + pointcount * (pointcount-1)].fixed = true;
 		m_vPoints[pointOffset + pointcount * pointcount - 1].fixed = true;
-
-		//setup ball
-		Vec3 ballPos = Vec3(0, 0, 0);
-		float ballRadius = 0.2f;
-		float ballMass = 5.0f;
-
-		GameObject rndBall;
-		rndBall.id = 2;
-		rndBall.pointOffset = getNumberOfMassPoints();
-
-		rndBall.pointCount = 1;
-		int tmp = addMassPoint(ballPos, Vec3(0, 0, 0), false, ballMass, 2);
-
-		rndBall.sphereOffset = addSphere(tmp , ballRadius);
-
 		
 
 		break;
@@ -238,12 +228,6 @@ void MassSpringSystemSimulator::externalForcesCalculations(float timeElapsed)
 		float inputScale = 0.005f;
 		inputWorld = inputWorld * inputScale;
 
-		/*
-		for (int i = 0; i < m_vPoints.size(); ++i)
-		{
-			m_vPoints[i].velocity += inputWorld;
-		}
-		*/
 		m_externalForce = inputWorld; 
 	}
 }
@@ -257,20 +241,6 @@ void MassSpringSystemSimulator::computeElasticForces()
 		m_vPoints[s.masspoint1].force -= force;
 		m_vPoints[s.masspoint2].force += force;
 	}
-
-//#define ISUCK
-#ifdef ISUCK
-	Vec3 clearforce(0.0f, m_iTestCase > 2 ? EARTH_ACCEL : 0.0f, 0.0f);
-	clearforce += m_externalForce;
-
-	Vec3 internalForce; 
-	for (Masspoint p : m_vPoints)
-		internalForce += p.force - clearforce; 
-
-	cout << "internal force after computeElasticForces (should be 0) : " << internalForce << endl; 
-
-#endif //  Deb
-
 
 }
 
@@ -352,12 +322,6 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 			{
 				p.velocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeStep;
 
-				//check if point collides with sphere in complex scene
-				if (checkPointAgainstSphere(m_vPoints[i], m_vSpheres[0]))
-				{
-					p.pos = p.tmpPos;
-					//p.velocity = p.tmpVel;
-				}
 			}
 		}
 
@@ -378,11 +342,6 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 				p.pos.y = FLOOR_Y; 
 		}
 
-		//check if spheres are out of bounds
-		for (Sphere s : m_vSpheres)
-		{
-			if ((m_vPoints[s.masspoint].pos.y - s.radius) < FLOOR_Y) m_vPoints[s.masspoint].pos.y = FLOOR_Y + s.radius;
-		}
 
 		
 	}
@@ -395,27 +354,39 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 	//user interaction
 }
 
-bool MassSpringSystemSimulator::checkPointAgainstSphere(Masspoint mp, Sphere s)
+void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 {
-	double dist = sqrt(pow(mp.pos.x - m_vPoints[s.masspoint].pos.x, 2.0) + pow(mp.pos.y - m_vPoints[s.masspoint].pos.y, 2.0) + pow(mp.pos.z - m_vPoints[s.masspoint].pos.z, 2.0));
-
-	if (dist < s.radius && dist !=0)
+	switch (type)
 	{
-		cout << dist << endl;
-		//cout << m_vPoints[s.masspoint].pos << endl;
-		return true;
 
+	case TYPE_MASS_SPRING:
+	{
+
+		break;
 	}
 
-	return false;
+	case TYPE_RIGIDBODY:
+	{
+
+		break;
+	}
+
+	case TYPE_SPH:
+	{
+
+		break;
+	}
+	}
+
+
 }
+
+
 
 void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	const Vec3 colPoints(1.0f, 0.0f, 0.0f); 
 	const Vec3 colFixPoints(0.0f, 0.0f, 1.0f);
-
-	const Vec3 colSpheres(1.0f, 1.0f, 0.5f);
 
 	const Vec3 colLines(0.0f, 1.0f, 0.0f); 
 	const Vec3 colForce(1.0f, 105.0/255.0, 180/255.0);
@@ -448,12 +419,6 @@ void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateCont
 		DUC->endLine();
 	}
 
-	for (Sphere s : m_vSpheres)
-	{
-		DUC->setUpLighting(colSpheres, colSpheres, 100, colSpheres);
-
-		DUC->drawSphere(m_vPoints[s.masspoint].pos, Vec3(s.radius, s.radius, s.radius));
-	}
 
 }
 
@@ -466,12 +431,6 @@ int MassSpringSystemSimulator::addMassPoint(Vec3 position, Vec3 velocity, bool i
 void MassSpringSystemSimulator::addSpring(int masspoint1, int masspoint2, float initialLength, float stiffness) // stiffness == -1 -> use m_fStiffness
 {
 	m_vSprings.push_back(Spring(masspoint1, masspoint2, initialLength, stiffness == -1 ? m_fStiffness : stiffness));
-}
-
-int MassSpringSystemSimulator::addSphere(int masspoint, float radius) // mass == -1 -> use m_fMass
-{
-	m_vSpheres.push_back(Sphere(masspoint, radius));
-	return m_vPoints.size() - 1;
 }
 
 

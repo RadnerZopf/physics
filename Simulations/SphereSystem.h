@@ -1,4 +1,6 @@
 #pragma once
+#ifndef SPHERESYSTEM_h
+#define SPHERESYSTEM_h
 
 #include <vector>
 #include <math.h>
@@ -42,3 +44,4 @@ private:
 
 };
 
+#endif
