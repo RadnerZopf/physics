@@ -1,94 +1,100 @@
-#include "RigidBodySystem.h"
-
+#include "rigidBodySystem.hpp"
 using namespace GamePhysics;
-
-
-RigidBodySystem::RigidBodySystem(Vec3 _position, Vec3 _size, float _mass, Quat _orientation, Vec3 _linearVelocity, Vec3 _angularVelocity, float _bounciness) :
-	position(_position), mass(_mass), orientation(_orientation), linearVelocity(_linearVelocity), angularVelocity(_angularVelocity), size(_size), bouncieness(_bounciness)
+RigidBodySystem::RigidBodySystem() :
+	m_rigidBodies()
 {
-	//scaled quad // prob not gona need dis
-	points.push_back(Vec3(size.x, size.y, size.z)); 
-	points.push_back(Vec3(-size.x, size.y, size.z));
-	points.push_back(Vec3(size.x, -size.y, size.z));
-	points.push_back(Vec3(-size.x, -size.y, size.z));
-
-	points.push_back(Vec3(size.x, size.y, -size.z));
-	points.push_back(Vec3(-size.x, size.y, -size.z));
-	points.push_back(Vec3(size.x, -size.y, -size.z));
-	points.push_back(Vec3(-size.x, -size.y, -size.z));
-
-	// this we need
-
-
-	scaleMat.initScaling(size.x, size.y, size.z); 
-
-
-	double tensorarr[16] = { size.x * size.x,	-size.x*size.y,		-size.x*size.z,		0,
-							-size.x * size.y,	size.y * size.y,	-size.y * size.z,	0,
-							-size.x * size.z,	-size.y * size.z,	size.z * size.Z,	0,
-								0	,				0		,			0		,		1 };
-	inertiaTensor.initFromArray(tensorarr);
-	inertiaTensor = inertiaTensor.inverse();
-
 }
-
-
-Mat4 RigidBodySystem::getInertiaTensor()
-{
-	Mat4 rot = orientation.getRotMat(); 
-
-	Mat4 rotT(rot); 
-	rotT.transpose(); 
-
-
-	return rot * inertiaTensor * rotT; 
-}
-
 
 RigidBodySystem::~RigidBodySystem()
 {
 }
 
-
-void RigidBodySystem::applyForce(Vec3 _loc, Vec3 _force)
+void RigidBodySystem::SceneSetup(int sceneflag)
 {
-	force += _force; 
+	m_rigidBodies.clear();
+	if (sceneflag == 0 || sceneflag == 1)
+	{// basic test
+		m_rigidBodies.emplace_back(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f, 0.6f, 0.5f), 2.0f);
+		Quat rotation(Vec3(0.0f, 0.0f, 1.0f), (float)(M_PI) * 0.5f);
+		m_rigidBodies.back().setRotation(rotation);
+		//m_rigidBodies.back().setVelocity(XMVectorSet(-0.3f, -0.5f, -0.25f, 0.0f));
+		m_rigidBodies.back().update(0.0f);// set up obj to World and World to obj Matrix!
+		
+		Vec3 force = Vec3(1.0f, 1.0f, 0.0f);
+		Vec3 fwhere = Vec3(0.3f, 0.5f, 0.25f);
+		
+		m_rigidBodies.back().addForceWorld(force, fwhere);
 
-	XMVECTOR xmloc = _loc.toDirectXVector(); 
-	XMVECTOR xmforce = _force.toDirectXVector(); 
-	XMVECTOR xmtorque = XMVector3Cross(xmloc, xmforce); 
-	torque += Vec3(xmtorque); 
+		if (sceneflag == 1){
+			update(0.01); // in the update, the extra force will be cleared
+		}
+		
+		if (sceneflag == 0){
+			update(2.0f);
+			Vec3 tmpfloat =  m_rigidBodies.back().getCenter();
+			std::cout << "new Position, x, " << tmpfloat.x << ", y, " << tmpfloat.y << ", z, " << tmpfloat.z << "\n";
 
+			tmpfloat =  m_rigidBodies.back().getVelocity();
+			std::cout << "new Velocity, x, " << tmpfloat.x << ", y, " << tmpfloat.y << ", z, " << tmpfloat.z << "\n";
+
+			tmpfloat =  m_rigidBodies.back().getAngularV();
+			std::cout << "new Angular V, x, " << tmpfloat.x << ", y, " << tmpfloat.y << ", z, " << tmpfloat.z << "\n";
+
+			Vec3 xa_world = Vec3(-0.3f, -0.5f, -0.25f) - m_rigidBodies.back().getCenter();
+			Vec3 velocityA = m_rigidBodies.back().getVelocity() + cross(m_rigidBodies.back().getAngularV(), xa_world);
+
+			tmpfloat =  velocityA;
+			std::cout << "vel at P(-0.3, -0.5, -0.25), x, " << tmpfloat.x << ", y, " << tmpfloat.y << ", z, " << tmpfloat.z << "\n";
+
+			testCheckCollision(1);
+			testCheckCollision(2);
+			testCheckCollision(3);
+		}
+	}
+	else if (sceneflag == 2)
+	{
+		m_rigidBodies.emplace_back(Vec3(-0.1f, -0.2f, 0.1f), Vec3(0.4f, 0.2f, 0.2f), 100.0f);
+		m_rigidBodies.back().update(0.0f);
+		m_rigidBodies.emplace_back(Vec3(0.0f, 0.2f, 0.0f), Vec3(0.4f, 0.2f, 0.2f), 100.0f);
+		// Quat normal axis not used here
+		m_rigidBodies.back().setRotation(Quat(Vec3(0.0f, 0.0f, 1.0f), (float)(M_PI)*0.25f));
+		m_rigidBodies.back().setVelocity(Vec3(0.0f, -0.1f, 0.05f));
+		m_rigidBodies.back().update(0.0f);
+	}
 }
 
-void RigidBodySystem::saveState()
+void RigidBodySystem::dragTogether()
 {
-	this->old_position = position;
-	//this->old_linearVelocity = linearVelocity;
-	this->old_orientation = orientation;
-	//this->old_angularMomentum = angularMomentum;
-	//this->old_angularVelocity = angularVelocity;
+	for (int i = 0 ; i < m_rigidBodies.size() - 1; ++i)
+	{
+		Vec3 vel = m_rigidBodies[i+1].getCenter() - m_rigidBodies[i].getCenter();
+		m_rigidBodies[i].setVelocity(vel * 0.1f);
+		m_rigidBodies[i+1].setVelocity(vel * -0.1f);
+	}
 }
 
-void RigidBodySystem::loadOldState()
+void RigidBodySystem::addGlobalFrameForce(const Vec3 force)
 {
-	//this->angularMomentum = old_angularMomentum;
-	//this->angularVelocity = old_angularVelocity;
-	//this->linearVelocity = old_linearVelocity;
-	this->position = old_position;
-	this->orientation = old_orientation;
+	for (RigidBody& rigidBody : m_rigidBodies)
+	{
+		rigidBody.addForceWorld(force, XMVectorZero());
+	}
 }
 
-
-Mat4& RigidBodySystem::getWorldMat()
+void RigidBodySystem::update(float deltaTime)
 {
-	Mat4 translation; 
-	translation.initTranslation(position.x, position.y, position.z); 
 
-
-	worldMat = scaleMat; 
-	worldMat *= orientation.getRotMat();
-	worldMat *= translation; 
-
-	return worldMat; 
+	for (RigidBody& rigidBody : m_rigidBodies)
+	{
+		rigidBody.update(deltaTime);
+	}
+	for (size_t i = 0; i < m_rigidBodies.size(); ++i)
+	{
+		for (size_t j = i + 1; j < m_rigidBodies.size(); ++j)
+		{
+			if (RigidBody::collide(m_rigidBodies[i], m_rigidBodies[j]))
+			{
+			}
+		}
+	}
 }

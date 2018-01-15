@@ -9,10 +9,6 @@
 #include "util/vectorbase.h"
 #include "DrawingUtilitiesClass.h"
 
-#define TYPE_MASS_SPRING 0
-#define TYPE_RIGIDBODY 1
-#define TYPE_SPH 2
-
 struct Point2D {
 	int x,y;
 };
@@ -73,14 +69,6 @@ public:
 	input x,y: the mouse position in pixels
 	*/
 	virtual void onMouse(int x, int y) = 0;
-
-
-	//creates interaction with other systems
-
-	virtual void interactWithSystem(int type, Simulator* other) = 0; 
-
-	float collisionRadius = D3D11_FLOAT32_MAX;  // collision with other systems
-	Vec3 center; 
 
 };
 

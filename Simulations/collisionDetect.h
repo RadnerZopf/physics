@@ -471,7 +471,7 @@ inline void testCheckCollision(int caseid){
 			std::printf("collision point : %f, %f, %f\n", (simpletest.collisionPointWorld).x, (simpletest.collisionPointWorld).y, simpletest.collisionPointWorld.z);
 		}
 		// case 3 result:
-		// collision detected at normal: -1.000000, 0.000000, -0.000000
+		// collision detected at normal: -1.000000, 0.000000, 0.000000
 		// collision point : 0.000405, 0.000000, 0.000000
 	}
 }

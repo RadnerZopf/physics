@@ -1,12 +1,9 @@
 #ifndef RIGIDBODYSYSTEMSIMULATOR_h
 #define RIGIDBODYSYSTEMSIMULATOR_h
 #include "Simulator.h"
-//add your header for your rigid body system, for e.g.,
-#include "RigidBodySystem.h" 
+#include "rigidBodySystem.hpp"
 
 #define TESTCASEUSEDTORUNTEST 2
-
-#define EARTH_ACCEL GamePhysics::Real(-9.81)
 
 class RigidBodySystemSimulator:public Simulator{
 public:
@@ -25,40 +22,19 @@ public:
 	void onMouse(int x, int y);
 
 	// ExtraFunctions
-	int getNumberOfRigidBodies() { return m_vRigidBodies.size(); }
-	Vec3 getPositionOfRigidBody(int i) { return m_vRigidBodies[i].position; }
-	Vec3 getLinearVelocityOfRigidBody(int i) { return m_vRigidBodies[i].linearVelocity; }
-	Vec3 getAngularVelocityOfRigidBody(int i) { return m_vRigidBodies[i].angularVelocity; }
-	void applyForceOnBody(int i, Vec3 loc, Vec3 force) { m_vRigidBodies[i].applyForce(loc, force); }
-	void addRigidBody(Vec3 position, Vec3 size, int mass, Quat _orientation = Quat(0.0f, 0.0f, 0.0f, 1.0f), Vec3 _linearVelocity = Vec3(), Vec3 _angularVelocity = Vec3(), float bounciness = 0.0f) { m_vRigidBodies.push_back(RigidBodySystem(position, size, mass, _orientation, _linearVelocity, _angularVelocity, bounciness)); }
-	void setOrientationOf(int i,Quat orientation) { m_vRigidBodies[i].orientation = orientation; }
-	void setVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].linearVelocity = velocity; }
-	void setAngularVelocityOf(int i, Vec3 velocity) { m_vRigidBodies[i].angularVelocity = velocity; }
-
-	void interactWithSystem(int type, Simulator* other);
+	int getNumberOfRigidBodies();
+	Vec3 getPositionOfRigidBody(int i);
+	Vec3 getLinearVelocityOfRigidBody(int i);
+	Vec3 getAngularVelocityOfRigidBody(int i);
+	void applyForceOnBody(int i, Vec3 loc, Vec3 force);
+	void addRigidBody(Vec3 position, Vec3 size, int mass);
+	void setOrientationOf(int i,Quat orientation);
+	void setVelocityOf(int i, Vec3 velocity);
 
 private:
-
-	//much lazy
-	Vec3 cross(Vec3& a, Vec3& b)
-	{
-		XMVECTOR xmloc = a.toDirectXVector();
-		XMVECTOR xmforce = b.toDirectXVector();
-		XMVECTOR xmtorque = XMVector3Cross(xmloc, xmforce);
-		return Vec3(xmtorque);
-	}
-
-
 	// Attributes
-	// add your RigidBodySystem data members, for e.g.,
-	// RigidBodySystem * m_pRigidBodySystem; 
+	RigidBodySystem * m_pRigidBodySystem;
 	Vec3 m_externalForce;
-
-
-	vector<RigidBodySystem> m_vRigidBodies; 
-
-	int floorId;
-	bool gravity = false;
 
 	// UI Attributes
 	Point2D m_mouse;
