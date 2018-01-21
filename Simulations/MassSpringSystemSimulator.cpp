@@ -373,6 +373,8 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 
 		Real squaredRbSimRadius = rbSim->collisionRadius * rbSim->collisionRadius;
 
+		Vec3 rbScaleDiv2 = 1.0/2.0 * rbSys->size; 
+
 		for (int i = 0; i < m_vPoints.size(); ++i)
 		{
 
@@ -399,7 +401,11 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 				Vec3 r(rotatedPoint); 
 
 				//point within cube
-				if (abs(r.x)<rbSys->size.x && abs(r.y) < rbSys->size.y && abs(r.z) < rbSys->size.z)
+				if (
+					abs(r.x)<rbScaleDiv2.x 
+					&& abs(r.y) < rbScaleDiv2.y 
+					&& abs(r.z) < rbScaleDiv2.z
+					)
 				{
 					//TODO: collision response
 
