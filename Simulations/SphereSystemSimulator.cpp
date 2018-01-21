@@ -431,8 +431,10 @@ void SphereSystemSimulator::measureTime(float timeStep)
 		
 }
 
-void SphereSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
+void SphereSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext, DrawingUtilitiesClass* _DUC)
 {
+
+	if (_DUC != nullptr) DUC = _DUC;
 
 	if (!m_bDrawScene) return; 
 

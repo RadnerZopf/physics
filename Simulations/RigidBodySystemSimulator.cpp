@@ -224,8 +224,10 @@ void RigidBodySystemSimulator::interactWithSystem(int type, Simulator* other)
 
 }
 
-void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
+void RigidBodySystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext, DrawingUtilitiesClass* _DUC)
 {
+	if (_DUC != nullptr)
+		this->DUC = _DUC;
 	bool renderAll = true;
 	for (RigidBodySystem body : m_vRigidBodies)
 	{

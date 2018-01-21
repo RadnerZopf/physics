@@ -383,8 +383,11 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 
 
 
-void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
+void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext, DrawingUtilitiesClass* _DUC)
 {
+
+	if (_DUC != nullptr) DUC = _DUC;
+
 	const Vec3 colPoints(1.0f, 0.0f, 0.0f); 
 	const Vec3 colFixPoints(0.0f, 0.0f, 1.0f);
 

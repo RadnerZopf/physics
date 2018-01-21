@@ -150,11 +150,11 @@ void FinalSimulator::externalForcesCalculations(float timeElapsed)
 	}
 }
 
-void FinalSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext)
+void FinalSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateContext, DrawingUtilitiesClass* _DUC)
 {
 	for (Simulator* sim : simulators)
 	{
-		sim->drawFrame(pd3dImmediateContext); 
+		sim->drawFrame(pd3dImmediateContext, this->DUC); 
 	}
 
 }
