@@ -71,9 +71,17 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 
 		break;
 	case 1: // use this for final sim!!!
-		addRigidBody(center, Vec3(1, 1, 1), 2, rotate90Z, Vec3(), Vec3(), 0.25);
+		addRigidBody(center, Vec3(0.5,0.5,0.5), 2, rotate90Z, Vec3(), Vec3(), 0.25);
+
+
+
+
+
+
+
 
 		break; //  single Body
+
 	case 2:
 
 		addRigidBody(Vec3(-2,0.5,0), Vec3(1.0f, 1.0f, 1.0f), 2, rotate90YZ, Vec3(0.0,0.0,0.0), Vec3());
@@ -119,8 +127,8 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 			rigidBody.position += timeStep * rigidBody.linearVelocity;
 			rigidBody.linearVelocity += timeStep / rigidBody.mass * rigidBody.force;
 
-			if (m_iTestCase == 3 && gravity) // compex sim -> apply gravity
-				rigidBody.linearVelocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeStep;
+			//if (m_iTestCase == 3 && gravity) // compex sim -> apply gravity //final sim needs gravity
+			rigidBody.linearVelocity += Vec3(0.0f, EARTH_ACCEL, 0.0f) * timeStep;
 
 			//this is prob. borked
 			Quat tmp = Quat(0, rigidBody.angularVelocity.x, rigidBody.angularVelocity.y, rigidBody.angularVelocity.z);

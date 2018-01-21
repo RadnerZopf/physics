@@ -45,6 +45,9 @@ void FinalSimulator::initUI(DrawingUtilitiesClass * DUC)
 
 void FinalSimulator::notifyCaseChanged(int testCase)
 {
+
+	simulators.clear(); 
+
 	// setup test scene
 	m_iTestCase = testCase;
 
@@ -57,6 +60,8 @@ void FinalSimulator::notifyCaseChanged(int testCase)
 #define SIM_cube 1
 #define SIM_POOL 2
 */
+
+
 	MassSpringSystemSimulator* bouncyNet = new MassSpringSystemSimulator(); 
 	simulators.push_back(bouncyNet); 
 	//needs to be centered on a point w/ x=z cuz MP.complex sim is setup poorly-> so i guess this is going center scene
@@ -71,16 +76,15 @@ void FinalSimulator::notifyCaseChanged(int testCase)
 
 	RigidBodySystemSimulator* cube = new RigidBodySystemSimulator(); 
 	simulators.push_back(cube);
-	cube->center = Vec3(0, 3, -2); 
+	cube->center = Vec3(0, 2.5, 0); 
 	cube->DUC = DUC;
 	cube->m_iTestCase = 1; // cube that will be thrown
-
-
+	
 
 	cube->notifyCaseChanged(1);
 
 
-/* this si fucked
+/* this is fucked
 	SphereSystemSimulator* pool = new SphereSystemSimulator(); 
 	simulators.push_back(pool);
 
@@ -101,6 +105,9 @@ void FinalSimulator::notifyCaseChanged(int testCase)
 
 void FinalSimulator::simulateTimestep(float timeStep)
 {
+
+	timeStep *= 2;  // speedup
+
 	//TODO
 	//input --> push cube 
 
@@ -116,8 +123,7 @@ void FinalSimulator::simulateTimestep(float timeStep)
 			Simulator *b = simulators[j];
 			if ((a->center - b->center) * (a->center - b->center) < a->collisionRadius + b->collisionRadius)
 			{
-				a->interactWithSystem(simType(b), b);
-				b->interactWithSystem(simType(a), a);
+				a->interactWithSystem(simType(b), b); // mass spring vs rigidbody
 			}
 		}
 	}

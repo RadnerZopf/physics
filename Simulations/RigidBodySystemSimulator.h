@@ -37,6 +37,9 @@ public:
 
 	void interactWithSystem(int type, Simulator* other);
 
+
+	RigidBodySystem* getRigidBodySystem() { return &m_vRigidBodies[0]; } //final sim
+
 private:
 
 	//much lazy

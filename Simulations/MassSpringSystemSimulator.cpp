@@ -361,18 +361,66 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 
 	case TYPE_MASS_SPRING:
 	{
-
+		//not gona happen
 		break;
 	}
 
 	case TYPE_RIGIDBODY:
 	{
+		//cube on net
+		RigidBodySystemSimulator* rbSim = static_cast<RigidBodySystemSimulator*>(other);
+		RigidBodySystem* rbSys = rbSim->getRigidBodySystem(); 
+
+		Real squaredRbSimRadius = rbSim->collisionRadius * rbSim->collisionRadius;
+
+		for (int i = 0; i < m_vPoints.size(); ++i)
+		{
+
+			Masspoint& point = m_vPoints[i]; 
+			
+			Vec3 distToCenter = point.pos - rbSys->position; 
+			Real absDistSquared = dot(distToCenter, distToCenter);
+
+			//point vs cube CD
+			//largeScale point vs collisionradius
+			if(absDistSquared < rbSim->collisionRadius * squaredRbSimRadius)
+			{
+				//check point vs cube
+				/*
+				*Idea: origin = center of cube
+				* axis = rotated axis
+				* ==> calculate point coords with new origin (= distToCenter)
+				* ==> inverse rotate point around origin (=align cube to xyz axis)
+				* ==> check against center.xyz +- scale.xyz
+				*/
+				
+				//roteted point
+				XMVECTOR rotatedPoint = XMVector3InverseRotate(distToCenter.toDirectXVector(), XMQuaternionInverse(rbSys->orientation.toDirectXQuat()));
+				Vec3 r(rotatedPoint); 
+
+				//point within cube
+				if (abs(r.x)<rbSys->size.x && abs(r.y) < rbSys->size.y && abs(r.z) < rbSys->size.z)
+				{
+					//TODO: collision response
+
+					point.fixed = true; 
+					printf("collisiionad"); 
+
+				}
+			}
+
+
+
+		}
+
+
 
 		break;
 	}
 
 	case TYPE_SPH:
 	{
+		//prob. not gona happen
 
 		break;
 	}
