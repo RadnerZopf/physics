@@ -80,7 +80,7 @@ void FinalSimulator::notifyCaseChanged(int testCase)
 	cube->notifyCaseChanged(1);
 
 
-
+/* this si fucked
 	SphereSystemSimulator* pool = new SphereSystemSimulator(); 
 	simulators.push_back(pool);
 
@@ -93,7 +93,7 @@ void FinalSimulator::notifyCaseChanged(int testCase)
 	pool->notifyCaseChanged(1);
 
 
-	
+	/**/
 
 
 
