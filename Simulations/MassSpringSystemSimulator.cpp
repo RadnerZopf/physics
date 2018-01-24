@@ -407,10 +407,68 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 					&& abs(r.z) < rbScaleDiv2.z
 					)
 				{
-					//TODO: collision response
 
-					point.fixed = true; 
-					printf("collisiionad"); 
+					//TODO: collision response
+					//point.fixed = true;
+					//printf("collisiionad");
+
+					//testblock
+					//body0.collisonPoint = info.collisionPointWorld;
+					//body1.collisonPoint = body0.collisonPoint;
+					GamePhysics::Vec3 collisionNormal = GamePhysics::Vec3(0,1,0);
+					GamePhysics::Vec3 collisionPoint = point.pos;
+
+					GamePhysics::Vec3 xaWorld = collisionPoint - rbSys->position;
+					//GamePhysics::Vec3 xbWorld = info.collisionPointWorld - body1.m_center;
+
+					// these obj positions are just used to print some message in cmd. Only for debug, not used in the impulse calculation
+					//GamePhysics::Vec3 xa_objA = body0.m_worldToObj.transformVector(info.collisionPointWorld);
+					//GamePhysics::Vec3 xb_objB = body1.m_worldToObj.transformVector(info.collisionPointWorld);
+					// end obj positions
+
+					GamePhysics::Mat4 rotation0 = rbSys->orientation.getRotMat();
+					//GamePhysics::Mat4 rotation1 = body1.m_rotation.getRotMat();
+					GamePhysics::Mat4 rotationTranspose0 = rotation0;
+					//GamePhysics::Mat4 rotationTranspose1 = rotation1;
+					rotationTranspose0.transpose();
+					//rotationTranspose1.transpose();
+					GamePhysics::Mat4 currentInertiaTensorInverse0 = rotation0 * rbSys->getInertiaTensor() * rotationTranspose0;
+					//GamePhysics::Mat4 currentInertiaTensorInverse1 = rotation1 * body1.m_inertiaTensorInverse * rotationTranspose1;
+					GamePhysics::Vec3 angularVel_A = currentInertiaTensorInverse0.transformVector(rbSys->angularMomentum);
+					//GamePhysics::Vec3 angularVel_B = currentInertiaTensorInverse1.transformVector(body1.m_momentum);
+
+					GamePhysics::Vec3 velocityA = rbSys->linearVelocity + cross(angularVel_A, xaWorld);
+					//GamePhysics::Vec3 velocityB = body1.m_velocity + cross(angularVel_B, xbWorld);
+
+					rbSys->linearVelocity = velocityA;
+					//body0.relVelocity = velocityA - velocityB;
+					//body0.totalVelocity = velocityA;
+					//body1.totalVelocity = velocityB;
+					float relVelonNormal = dot(velocityA, collisionNormal);
+					//if (relVelonNormal > 0.0f) break; // leaving each other, collide before
+
+					//std::cout << "collision detected at normal: " << info.normalWorld << std::endl;
+					//std::cout << "x_a: " << xa_objA << std::endl;
+					//std::cout << "x_b: " << xb_objB << std::endl;
+
+					const float elasticity = 1.0f; // todo: set as a user input param
+					const float numerator = -(1.0f + elasticity) * relVelonNormal;
+					const float inverseMasses = (-1) * (rbSys->mass + point.mass);
+
+					GamePhysics::Vec3 rma = cross(currentInertiaTensorInverse0.transformVector(cross(xaWorld, collisionNormal)), xaWorld);
+					GamePhysics::Vec3 rmb = GamePhysics::Vec3(0, 0, 0);
+					const float rmab = GamePhysics::dot(rma + rmb, collisionNormal);
+					const float denominator = inverseMasses + rmab;
+
+					const float impulse = numerator / denominator;
+
+					GamePhysics::Vec3 impulseNormal = impulse * collisionNormal;
+					rbSys->linearVelocity += impulseNormal * rbSys->mass * (-1);
+					point.velocity -= impulseNormal * point.mass * (-1);
+
+					rbSys->angularMomentum += cross(xaWorld, impulseNormal);
+					//body1.m_momentum -= cross(xbWorld, impulseNormal);
+					//testblockend
 
 				}
 			}
