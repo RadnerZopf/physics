@@ -451,7 +451,7 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 					//std::cout << "x_a: " << xa_objA << std::endl;
 					//std::cout << "x_b: " << xb_objB << std::endl;
 
-					const float elasticity = 1.0f; // todo: set as a user input param
+					const float elasticity = 1.5f; // todo: set as a user input param
 					const float numerator = -(1.0f + elasticity) * relVelonNormal;
 					const float inverseMasses = (-1) * (rbSys->mass + point.mass);
 
@@ -464,7 +464,7 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 
 					GamePhysics::Vec3 impulseNormal = impulse * collisionNormal;
 					rbSys->linearVelocity += impulseNormal * rbSys->mass * (-1);
-					point.velocity -= impulseNormal * point.mass * (-1);
+					point.velocity += impulseNormal * point.mass;
 
 					rbSys->angularMomentum += cross(xaWorld, impulseNormal);
 					//body1.m_momentum -= cross(xbWorld, impulseNormal);
