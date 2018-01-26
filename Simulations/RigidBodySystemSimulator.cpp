@@ -71,7 +71,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 
 		break;
 	case 1: // use this for final sim!!!
-		addRigidBody(center, Vec3(0.5,0.5,0.5), 2, rotate90Z, Vec3(), Vec3(), 0.25);
+		addRigidBody(center, Vec3(0.5,0.5,0.5), 5, rotate90Z, Vec3(), Vec3(), 0.0f);
 
 
 
