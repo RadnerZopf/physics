@@ -123,5 +123,7 @@ private:
 	vector<Spring> m_vSprings; 
 	vector<GameObject> m_vGameObjects;
 
+	vector<pair<Vec3, Vec3>> collisionNormals; 
+
 };
 #endif

@@ -73,7 +73,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 	case 1: // use this for final sim!!!
 		addRigidBody(center, Vec3(0.5,0.5,0.5), 5, rotate90Z, Vec3(), Vec3(), 0.0f);
 
-
+		
 
 
 
@@ -108,12 +108,8 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
  
 void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 {
-	//cout << "new ts" << endl;
-
 	for (int i = 0; i <m_vRigidBodies.size(); i++)
 	{
-
-
 		RigidBodySystem &rigidBody = m_vRigidBodies[i];
 
 		if (!rigidBody.fixed)
@@ -158,7 +154,6 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 			RigidBodySystem& b = m_vRigidBodies[j]; 
 
 			CollisionInfo col = checkCollisionSAT(a.getWorldMat(), b.getWorldMat()); //redundant worldmat calculations here, future me should fix that
-			
 
 
 			if (col.isValid)

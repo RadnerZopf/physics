@@ -116,18 +116,18 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 
 
 		this->m_iIntegrator = MIDPOINT; 
-		this->m_fDamping = 0.05;
+		this->m_fDamping = 0.025;
 
 		int pointOffset = getNumberOfMassPoints();
 		int springOffset = getNumberOfSprings();
 
 		float startpos = -0.7f; 
 		float startY = 0.4f; 
-		int pointcount = 15;
+		int pointcount = 20;
 		float totalMass = 5;
-		float springLength = 0.1;
+		float springLength = 0.075;
 		float diagLength = sqrt(2 * springLength* springLength);
-		float stiffness = 50;
+		float stiffness = 75;
 
 		//adaptations for final project
 		collisionRadius = springLength * pointcount; 
@@ -340,10 +340,7 @@ void MassSpringSystemSimulator::simulateTimestep(float timeStep)
 		{
 			if (p.pos.y < FLOOR_Y) // Floor //<- useful comment
 				p.pos.y = FLOOR_Y; 
-		}
-
-
-		
+		}		
 	}
 
 
@@ -367,6 +364,9 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 
 	case TYPE_RIGIDBODY:
 	{
+		collisionNormals.clear();
+		collisionNormals.reserve(200); 
+
 		//cube on net
 		RigidBodySystemSimulator* rbSim = static_cast<RigidBodySystemSimulator*>(other);
 		RigidBodySystem* rbSys = rbSim->getRigidBodySystem(); 
@@ -374,6 +374,7 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 		Real squaredRbSimRadius = rbSim->collisionRadius * rbSim->collisionRadius;
 
 		Vec3 rbScaleDiv2 = 1.0/2.0 * rbSys->size; 
+		collisionNormals.push_back(std::pair<Vec3, Vec3>(rbSys->position, rbSys->position + rbSys->linearVelocity));
 
 		for (int i = 0; i < m_vPoints.size(); ++i)
 		{
@@ -407,15 +408,21 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 					&& abs(r.z) < rbScaleDiv2.z
 					)
 				{
-
+					Vec3 vecPenDepth = rbScaleDiv2 - r.getAbsolutes();
+					float penDepth = sqrt(dot(vecPenDepth, vecPenDepth));
 					//TODO: collision response
-					//point.fixed = true;
-					printf("collisiionad");
+					//printf("collisiionad");
 
 					//testblock
 					//body0.collisonPoint = info.collisionPointWorld;
 					//body1.collisonPoint = body0.collisonPoint;
 					GamePhysics::Vec3 collisionNormal = GamePhysics::Vec3(0,1,0);
+
+					collisionNormal = distToCenter / sqrt(absDistSquared); //didnt find a normalization fkt
+
+					//debug normals
+					collisionNormals.push_back(std::pair<Vec3, Vec3>(point.pos, point.pos + collisionNormal));
+
 					GamePhysics::Vec3 collisionPoint = point.pos;
 
 					GamePhysics::Vec3 xaWorld = collisionPoint - rbSys->position;
@@ -444,7 +451,7 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 					//body0.relVelocity = velocityA - velocityB;
 					//body0.totalVelocity = velocityA;
 					//body1.totalVelocity = velocityB;
-					float relVelonNormal = dot(velocityA, collisionNormal);
+					float relVelonNormal = dot(velocityA, collisionNormal) - dot(point.velocity, collisionNormal);
 					//if (relVelonNormal > 0.0f) break; // leaving each other, collide before
 
 					//std::cout << "collision detected at normal: " << info.normalWorld << std::endl;
@@ -453,7 +460,7 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 
 					const float elasticity = 1.0f; // todo: set as a user input param
 					const float numerator = -(1.0f + elasticity) * relVelonNormal;
-					const float inverseMasses = 1 / (rbSys->mass + point.mass);
+					const float inverseMasses = 1 / rbSys->mass + 1/ point.mass;
 
 					GamePhysics::Vec3 rma = cross(currentInertiaTensorInverse0.transformVector(cross(xaWorld, collisionNormal)), xaWorld);
 					GamePhysics::Vec3 rmb = GamePhysics::Vec3(0, 0, 0);
@@ -467,7 +474,10 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 					rbSys->linearVelocity += impulseNormal / rbSys->mass;
 					point.velocity -= impulseNormal / point.mass;
 
+					point.pos += collisionNormal * penDepth;
+
 					rbSys->angularMomentum += cross(xaWorld, impulseNormal);
+
 					//body1.m_momentum -= cross(xbWorld, impulseNormal);
 					//testblockend
 
@@ -535,6 +545,16 @@ void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateCont
 		DUC->endLine();
 	}
 
+
+	//Debug
+	const Vec3 colDebug(1.0f, 0.078f, 0.576f);
+
+	for (auto pair : collisionNormals)
+	{
+		DUC->beginLine();
+		DUC->drawLine(pair.first, colDebug, pair.second, colDebug);
+		DUC->endLine();
+	}
 
 }
 
