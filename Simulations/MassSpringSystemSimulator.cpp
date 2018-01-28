@@ -123,11 +123,11 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 
 		float startpos = -0.7f; 
 		float startY = 0.4f; 
-		int pointcount = 20;
-		float totalMass = 5;
+		int pointcount = 22;
+		float totalMass = 10;
 		float springLength = 0.075;
 		float diagLength = sqrt(2 * springLength* springLength);
-		float stiffness = 75;
+		float stiffness = 125;
 
 		//adaptations for final project
 		collisionRadius = springLength * pointcount; 
@@ -375,6 +375,8 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 
 		Vec3 rbScaleDiv2 = 1.0/2.0 * rbSys->size; 
 		collisionNormals.push_back(std::pair<Vec3, Vec3>(rbSys->position, rbSys->position + rbSys->linearVelocity));
+		collisionNormals.push_back(std::pair<Vec3, Vec3>(rbSys->position, rbSys->position + rbSys->angularVelocity*100));
+
 
 		for (int i = 0; i < m_vPoints.size(); ++i)
 		{
@@ -440,32 +442,33 @@ void MassSpringSystemSimulator::interactWithSystem(int type, Simulator* other)
 					rotationTranspose0.transpose();
 					//rotationTranspose1.transpose();
 					GamePhysics::Mat4 currentInertiaTensorInverse0 = rotation0 * rbSys->getInertiaTensor() * rotationTranspose0;
+					currentInertiaTensorInverse0 = rbSys->getInertiaTensor(); 
 					//GamePhysics::Mat4 currentInertiaTensorInverse1 = rotation1 * body1.m_inertiaTensorInverse * rotationTranspose1;
 					GamePhysics::Vec3 angularVel_A = currentInertiaTensorInverse0.transformVector(rbSys->angularMomentum);
 					//GamePhysics::Vec3 angularVel_B = currentInertiaTensorInverse1.transformVector(body1.m_momentum);
 
-					GamePhysics::Vec3 velocityA = rbSys->linearVelocity + cross(angularVel_A, xaWorld);
+					GamePhysics::Vec3 velocityA = rbSys->linearVelocity + cross(angularVel_A, xaWorld)*0.1;
 					//GamePhysics::Vec3 velocityB = body1.m_velocity + cross(angularVel_B, xbWorld);
 
 					rbSys->linearVelocity = velocityA;
 					//body0.relVelocity = velocityA - velocityB;
 					//body0.totalVelocity = velocityA;
 					//body1.totalVelocity = velocityB;
-					float relVelonNormal = dot(velocityA, collisionNormal) - dot(point.velocity, collisionNormal);
+					float relVelonNormal = dot(velocityA - point.velocity, collisionNormal);
 					//if (relVelonNormal > 0.0f) break; // leaving each other, collide before
 
 					//std::cout << "collision detected at normal: " << info.normalWorld << std::endl;
 					//std::cout << "x_a: " << xa_objA << std::endl;
 					//std::cout << "x_b: " << xb_objB << std::endl;
 
-					const float elasticity = 1.0f; // todo: set as a user input param
-					const float numerator = -(1.0f + elasticity) * relVelonNormal;
-					const float inverseMasses = 1 / rbSys->mass + 1/ point.mass;
+					float elasticity = 1.0f; // todo: set as a user input param
+					float numerator = -(1.0f + elasticity) * relVelonNormal;
+					float inverseMasses = 1 / rbSys->mass + 1/ point.mass;
 
 					GamePhysics::Vec3 rma = cross(currentInertiaTensorInverse0.transformVector(cross(xaWorld, collisionNormal)), xaWorld);
 					GamePhysics::Vec3 rmb = GamePhysics::Vec3(0, 0, 0);
-					const float rmab = GamePhysics::dot(rma + rmb, collisionNormal);
-					const float denominator = inverseMasses + rmab;
+					float rmab = GamePhysics::dot(rma + rmb, collisionNormal);
+					float denominator = inverseMasses + rmab;
 
 					float impulse = numerator / denominator;
 					//impulse /= 2.5f;
@@ -546,16 +549,16 @@ void MassSpringSystemSimulator::drawFrame(ID3D11DeviceContext* pd3dImmediateCont
 	}
 
 
-	//Debug
+	/*//Debug
 	const Vec3 colDebug(1.0f, 0.078f, 0.576f);
-
+	
 	for (auto pair : collisionNormals)
 	{
 		DUC->beginLine();
 		DUC->drawLine(pair.first, colDebug, pair.second, colDebug);
 		DUC->endLine();
 	}
-
+	/**/
 }
 
 int MassSpringSystemSimulator::addMassPoint(Vec3 position, Vec3 velocity, bool isFixed, float mass, int gameObject) // mass == -1 -> use m_fMass
