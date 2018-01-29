@@ -40,6 +40,12 @@ void FinalSimulator::initUI(DrawingUtilitiesClass * DUC)
 
 	default:break;
 	}
+
+	for (auto sim : simulators)
+	{
+		sim->initUI(DUC); 
+	}
+
 	//TwAddVarRW(DUC->g_pTweakBar, "DrawForce and vel", TW_TYPE_BOOLCPP, &m_bDrawForce, "");
 }
 

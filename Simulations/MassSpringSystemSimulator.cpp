@@ -24,12 +24,17 @@ void MassSpringSystemSimulator::initUI(DrawingUtilitiesClass * DUC)
 	case 2:
 		break; // simple Midpoint 
 	case 3:
-		TwAddVarRW(DUC->g_pTweakBar, "Method", TwDefineEnumFromString("Method", "Euler, Leapfrog, Midpoint"), &m_iIntegrator, "");
-		break; // Complex sim
+		this->m_iIntegrator = MIDPOINT;
+		this->m_fDamping = 0.025;
+		this->m_fStiffness = 125;
+
+		TwAddVarRW(DUC->g_pTweakBar, "Stiffness", TW_TYPE_FLOAT, &m_fStiffness, "");
+
+		TwAddVarRW(DUC->g_pTweakBar, "Damping", TW_TYPE_FLOAT, &m_fDamping, "");		break; // Complex sim
 	case 4:break; // Leap Frog
 	default:break;
 	}
-	TwAddVarRW(DUC->g_pTweakBar, "DrawForce and vel", TW_TYPE_BOOLCPP, &m_bDrawForce, "");
+	//TwAddVarRW(DUC->g_pTweakBar, "DrawForce and vel", TW_TYPE_BOOLCPP, &m_bDrawForce, "");
 
 }
 
@@ -116,7 +121,7 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 
 
 		this->m_iIntegrator = MIDPOINT; 
-		this->m_fDamping = 0.025;
+		//this->m_fDamping = 0.025;
 
 		int pointOffset = getNumberOfMassPoints();
 		int springOffset = getNumberOfSprings();
@@ -140,6 +145,7 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 		weirdClothyThingamabob.id = 1;
 		weirdClothyThingamabob.pointOffset = pointOffset; 
 		weirdClothyThingamabob.springOffset = springOffset; 
+		float inittightener = 0.85;
 
 		for (int i = 0; i < pointcount; ++i)
 		{
@@ -164,10 +170,10 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 				int q2 = q0 + pointcount;
 				int q3 = q2 + 1;
 				
-				addSpring(q0, q1, springLength, stiffness);
-				addSpring(q0, q2, springLength, stiffness);
-				addSpring(q0, q3, diagLength, stiffness);
-				addSpring(q1, q2, diagLength, stiffness);
+				addSpring(q0, q1, springLength*inittightener, stiffness*0.75);
+				addSpring(q0, q2, springLength*inittightener, stiffness);
+				addSpring(q0, q3, diagLength*inittightener, stiffness);
+				addSpring(q1, q2, diagLength*inittightener, stiffness);
 
 				weirdClothyThingamabob.springCount += 4; // YES, I AM THAT LAZY
 
@@ -177,7 +183,7 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 			int e0 = pointOffset + (i) * pointcount - 1;
 			int e1 = e0 + pointcount;
 
-			addSpring(e0, e1, springLength, stiffness);
+			addSpring(e0, e1, springLength*inittightener, stiffness);
 			weirdClothyThingamabob.springCount++; // YES, I AM THAT LAZY
 
 		}
@@ -186,7 +192,7 @@ void MassSpringSystemSimulator::notifyCaseChanged(int type)
 		{
 			int q0 = pointOffset + (pointcount-1) * pointcount + j;
 			int q1 = q0 + 1;
-			addSpring(q0, q1, springLength, stiffness);
+			addSpring(q0, q1, springLength*inittightener, stiffness);
 			weirdClothyThingamabob.springCount++; // YES, I AM THAT LAZY
 
 		}
